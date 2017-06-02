@@ -18,11 +18,11 @@ import lombok.ToString;
 public class OfbizInstance {
 
 	/**
-	 * Component directory representation
+	 * Component group representation
 	 * @author user
 	 */
 	@RequiredArgsConstructor
-	public static class ComponentDirectory {
+	public static class ComponentGroup {
 		@Getter
 		@Setter
 		@NonNull
@@ -51,6 +51,6 @@ public class OfbizInstance {
 
 	@Getter
 	@Setter
-	private List<ComponentDirectory> componentDirectories = new ArrayList<>();
+	private List<ComponentGroup> componentGroups = new ArrayList<>();
 
 }

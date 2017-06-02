@@ -8,12 +8,12 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.Component;
-import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.ComponentDirectory;
+import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.ComponentGroup;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,12 +61,22 @@ public class OfbizUtil {
 	}
 
 	/**
-	 * Read OFBiz instance structure
+	 * Get OFBiz root path
 	 * @return
 	 */
-	public static OfbizInstance readInstance() {
-		OfbizInstance instance = new OfbizInstance();
-		File rootDirectory = new File("/home/user/Programs/apache-ofbiz-16.11.01");
+	public static String getOfbizRootPath() {
+		ApplicationHome home = new ApplicationHome();
+		log.info("application home dir {}", home.getDir());
+		return home.getDir() + "/src/test/resources/apache-ofbiz-16.11.02";
+	}
+
+	/**
+	 * Read OFBiz component group directories
+	 * @return
+	 */
+	public static List<File> readOfbizComponentGroupDirectories() {
+		File rootDirectory = new File(getOfbizRootPath());
+		List<File> componentGroupDirs = new ArrayList<>();
 
 		for (File levelOneFile: rootDirectory.listFiles()) {
 			log.info("level one file {}", levelOneFile.getName());
@@ -74,8 +84,63 @@ public class OfbizUtil {
 				for (File levelTwoFile : levelOneFile.listFiles()) {
 					log.info("level two file {}", levelTwoFile.getName());
 					if (levelTwoFile.isFile() && COMPONENT_LOAD_FILE_NAME.equals(levelTwoFile.getName())) {
+						componentGroupDirs.add(levelOneFile);
+					}
+				}
+			}
+		}
+
+		return componentGroupDirs;
+	}
+
+	/**
+	 * Read OFBiz component directories
+	 * @param componentGroupDir
+	 * @return
+	 */
+	public static List<File> readComponentDirectories(File componentGroupDir) {
+		List<File> componentDirs = new ArrayList<>();
+
+		for (File componentDir : componentGroupDir.listFiles()) {
+			if (componentDir.isDirectory()) { // TODO: check if directory contains ofbiz-component.xml file
+				log.info("component dir name {}", componentDir.getName());
+				componentDirs.add(componentDir);
+			}
+		}
+
+		return componentDirs;
+	}
+
+	/**
+	 * Read OFBiz instance structure
+	 * @return
+	 */
+	public static OfbizInstance readInstance() {
+		OfbizInstance instance = new OfbizInstance();
+		File rootDirectory = new File("/home/user/Programs/apache-ofbiz-16.11.01");
+
+		List<File> componentGroupDirs = readOfbizComponentGroupDirectories();
+		for (File componentGroupDir : componentGroupDirs) {
+			ComponentGroup componentGroup = new ComponentGroup(componentGroupDir.getName());
+
+			List<File> componentDirs = readComponentDirectories(componentGroupDir);
+			for (File componentDir : componentDirs) {
+				Component component = new Component(componentDir.getName()); // TODO: read component name from ofbiz-component.xml
+				componentGroup.getComponents().add(component);
+			}
+
+			instance.getComponentGroups().add(componentGroup);
+		}
+
+		/*
+		for (File levelOneFile: rootDirectory.listFiles()) {
+			log.info("level one file {}", levelOneFile.getName());
+			if (levelOneFile.isDirectory()) {
+				for (File levelTwoFile : levelOneFile.listFiles()) {
+					log.info("level two file {}", levelTwoFile.getName());
+					if (levelTwoFile.isFile() && COMPONENT_LOAD_FILE_NAME.equals(levelTwoFile.getName())) {
 						File componentDirectoryFile = levelOneFile;
-						ComponentDirectory componentDirectory = new ComponentDirectory(componentDirectoryFile.getName());
+						ComponentGroup componentDirectory = new ComponentGroup(componentDirectoryFile.getName());
 						instance.getComponentDirectories().add(componentDirectory);
 
 						for (File componentFile : componentDirectoryFile.listFiles()) {
@@ -103,6 +168,7 @@ public class OfbizUtil {
 				}
 			}
 		}
+		*/
 
 		return instance;
 	}
