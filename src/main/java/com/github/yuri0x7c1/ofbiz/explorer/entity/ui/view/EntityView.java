@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SpringView(name = "entities")
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Entities", order = 1)
-@VaadinFontIcon(VaadinIcons.LIST)
+@VaadinFontIcon(VaadinIcons.DATABASE)
 public class EntityView extends CommonView implements View {
 	@Autowired
 	private I18N i18n;

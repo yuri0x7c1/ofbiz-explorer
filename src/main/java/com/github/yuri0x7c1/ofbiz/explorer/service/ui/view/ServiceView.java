@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SpringView(name = "services")
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Services", order = 2)
-@VaadinFontIcon(VaadinIcons.LIST)
+@VaadinFontIcon(VaadinIcons.COG)
 public class ServiceView extends CommonView implements View {
 	@Autowired
 	private I18N i18n;
