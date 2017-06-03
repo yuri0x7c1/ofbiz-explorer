@@ -38,8 +38,8 @@ public class EntityView extends CommonView implements View {
 
 		entityGrid.setItems(ofbizInstance.getAllEntities().values());
 		entityGrid.setWidth("100%");
-		entityGrid.addColumn(Entity::getEntityName).setCaption("Entity name");
-		entityGrid.addColumn(Entity::getDescription).setCaption("Desctription");
+		entityGrid.addColumn(Entity::getEntityName).setCaption(i18n.get("Entity.name"));
+		entityGrid.addColumn(Entity::getDescription).setCaption(i18n.get("Description"));
 
 		addComponent(entityGrid);
 
