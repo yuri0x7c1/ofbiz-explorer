@@ -126,49 +126,26 @@ public class OfbizUtil {
 			List<File> componentDirs = readComponentDirectories(componentGroupDir);
 			for (File componentDir : componentDirs) {
 				Component component = new Component(componentDir.getName()); // TODO: read component name from ofbiz-component.xml
-				componentGroup.getComponents().add(component);
-			}
+				componentGroup.getComponents().put(component.getName(), component);
 
-			instance.getComponentGroups().add(componentGroup);
-		}
-
-		/*
-		for (File levelOneFile: rootDirectory.listFiles()) {
-			log.info("level one file {}", levelOneFile.getName());
-			if (levelOneFile.isDirectory()) {
-				for (File levelTwoFile : levelOneFile.listFiles()) {
-					log.info("level two file {}", levelTwoFile.getName());
-					if (levelTwoFile.isFile() && COMPONENT_LOAD_FILE_NAME.equals(levelTwoFile.getName())) {
-						File componentDirectoryFile = levelOneFile;
-						ComponentGroup componentDirectory = new ComponentGroup(componentDirectoryFile.getName());
-						instance.getComponentDirectories().add(componentDirectory);
-
-						for (File componentFile : componentDirectoryFile.listFiles()) {
-							log.info("component file {}", componentFile.getName());
-							if (componentFile.isDirectory() && !".settings".equals(componentFile.getName())) {
-								Component component = new Component(componentFile.getName());
-								componentDirectory.getComponents().add(component);
-
-								for (File f : componentFile.listFiles()) {
-									if (f.isDirectory() && ENTITYDEF_DIRECTORY_NAME.equals(f.getName())) {
-										for (File entitymodelFile : f.listFiles()) {
-											if (entitymodelFile.isFile() && entitymodelFile.getName().endsWith("entitymodel.xml")) {
-												log.info("entitymodel file {}", entitymodelFile.getName());
-												Entitymodel entitymodel = readEntitymodel(entitymodelFile);
-												component.getEntities().addAll(getEntities(entitymodel));
-											}
-										}
-									}
-								}
+				for (File f : componentDir.listFiles()) { // TODO: move this block to method returning map of entities
+					if (f.isDirectory() && ENTITYDEF_DIRECTORY_NAME.equals(f.getName())) {
+						for (File entitymodelFile : f.listFiles()) {
+							if (entitymodelFile.isFile() && entitymodelFile.getName().endsWith("entitymodel.xml")) {
+								log.info("entitymodel file {}", entitymodelFile.getName());
+								Entitymodel entitymodel = readEntitymodel(entitymodelFile);
+								getEntities(entitymodel).forEach(entity -> {
+									component.getEntities().put(entity.getEntityName(), entity);
+								});
 
 							}
 						}
-
 					}
 				}
 			}
+
+			instance.getComponentGroups().put(componentGroup.getName(), componentGroup);
 		}
-		*/
 
 		return instance;
 	}

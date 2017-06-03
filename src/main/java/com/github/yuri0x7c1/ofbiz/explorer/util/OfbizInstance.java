@@ -1,7 +1,8 @@
 package com.github.yuri0x7c1.ofbiz.explorer.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 
@@ -9,13 +10,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * OFBiz instance representation
  * @author user
  */
 public class OfbizInstance {
+
+	private Map<String, Entity> allEntities = new TreeMap<>();
 
 	/**
 	 * Component group representation
@@ -30,7 +32,7 @@ public class OfbizInstance {
 
 		@Getter
 		@Setter
-		private List<Component> components = new ArrayList<>();
+		private Map<String, Component> components = new TreeMap<>();
 	}
 
 	/**
@@ -46,11 +48,27 @@ public class OfbizInstance {
 
 		@Getter
 		@Setter
-		private List<Entity> entities = new ArrayList<>();
+		private Map<String, Entity> entities = new TreeMap<>();
 	}
 
 	@Getter
 	@Setter
-	private List<ComponentGroup> componentGroups = new ArrayList<>();
+	private Map<String, ComponentGroup> componentGroups = new HashMap<>();
+
+	/**
+	 * Return all OFBiz entities
+	 * @return
+	 */
+	public Map<String, Entity> getAllEntities() {
+		if (allEntities.isEmpty()) {
+			componentGroups.forEach((componentGroupName, componentGroup) -> {
+				componentGroup.components.forEach((componentName, component) -> {
+					allEntities.putAll(component.getEntities());
+				});
+			});
+		}
+
+		return allEntities;
+	}
 
 }
