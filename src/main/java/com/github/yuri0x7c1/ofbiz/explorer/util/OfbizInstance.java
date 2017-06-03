@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
+import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -18,6 +19,8 @@ import lombok.Setter;
 public class OfbizInstance {
 
 	private Map<String, Entity> allEntities = new TreeMap<>();
+
+	private Map<String, Service> allServices = new TreeMap<>();
 
 	/**
 	 * Component group representation
@@ -49,11 +52,15 @@ public class OfbizInstance {
 		@Getter
 		@Setter
 		private Map<String, Entity> entities = new TreeMap<>();
+
+		@Getter
+		@Setter
+		private Map<String, Service> services = new TreeMap<>();
 	}
 
 	@Getter
 	@Setter
-	private Map<String, ComponentGroup> componentGroups = new HashMap<>();
+	private Map<String, ComponentGroup> componentGroups = new TreeMap<>();
 
 	/**
 	 * Return all OFBiz entities
@@ -69,6 +76,22 @@ public class OfbizInstance {
 		}
 
 		return allEntities;
+	}
+
+	/**
+	 * Return all OFBiz services
+	 * @return
+	 */
+	public Map<String, Service> getAllServices() {
+		if (allEntities.isEmpty()) {
+			componentGroups.forEach((componentGroupName, componentGroup) -> {
+				componentGroup.components.forEach((componentName, component) -> {
+					allServices.putAll(component.getServices());
+				});
+			});
+		}
+
+		return allServices;
 	}
 
 }

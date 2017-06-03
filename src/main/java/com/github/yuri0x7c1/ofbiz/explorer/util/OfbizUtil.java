@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
+import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Services;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.Component;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.ComponentGroup;
 
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OfbizUtil {
 
 	public static final String ENTITYDEF_DIRECTORY_NAME = "entitydef";
+	public static final String SERVICEDEF_DIRECTORY_NAME = "servicedef";
 	public static final String COMPONENT_LOAD_FILE_NAME = "component-load.xml";
 
 	/**
@@ -37,6 +39,28 @@ public class OfbizUtil {
 					new FileInputStream(entitymodelFile));
 
 			return entitymodel;
+		}
+		catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Read services file
+	 * @param servicesFile
+	 * @return
+	 */
+	public static Services readServices(File servicesFile) {
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance("com.github.yuri0x7c1.ofbiz.explorer.service.xml");
+			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+			Services services  = (Services) unmarshaller.unmarshal(
+					new FileInputStream(servicesFile));
+
+			return services;
 		}
 		catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -128,16 +152,31 @@ public class OfbizUtil {
 				Component component = new Component(componentDir.getName()); // TODO: read component name from ofbiz-component.xml
 				componentGroup.getComponents().put(component.getName(), component);
 
-				for (File f : componentDir.listFiles()) { // TODO: move this block to method returning map of entities
-					if (f.isDirectory() && ENTITYDEF_DIRECTORY_NAME.equals(f.getName())) {
-						for (File entitymodelFile : f.listFiles()) {
-							if (entitymodelFile.isFile() && entitymodelFile.getName().endsWith("entitymodel.xml")) {
-								log.info("entitymodel file {}", entitymodelFile.getName());
-								Entitymodel entitymodel = readEntitymodel(entitymodelFile);
-								getEntities(entitymodel).forEach(entity -> {
-									component.getEntities().put(entity.getEntityName(), entity);
-								});
+				for (File f : componentDir.listFiles()) {
+					if (f.isDirectory()) {
+						// TODO: move this block to method returning map of entities
+						if (ENTITYDEF_DIRECTORY_NAME.equals(f.getName())) {
+							for (File entitymodelFile : f.listFiles()) {
+								if (entitymodelFile.isFile() && entitymodelFile.getName().endsWith("entitymodel.xml")) {
+									log.info("entitymodel file {}", entitymodelFile.getName());
+									Entitymodel entitymodel = readEntitymodel(entitymodelFile);
+									getEntities(entitymodel).forEach(entity -> {
+										component.getEntities().put(entity.getEntityName(), entity);
+									});
 
+								}
+							}
+						} // TODO: move this block to method returning map of services
+						else if (SERVICEDEF_DIRECTORY_NAME.equals(f.getName())) {
+							for (File servicesFile : f.listFiles()) {
+								if (servicesFile.isFile() && servicesFile.getName().startsWith("services")) {
+									log.info("servicedef file {}", servicesFile.getName());
+									Services services = readServices(servicesFile);
+									services.getService().forEach(service -> {
+										component.getServices().put(service.getName(), service);
+									});
+
+								}
 							}
 						}
 					}
