@@ -41,7 +41,7 @@ public class EntityView extends CommonView implements View {
 		entityGrid.setWidth("100%");
 		entityGrid.addColumn(Entity::getEntityName).setCaption(i18n.get("Entity.name"));
 		entityGrid.addColumn(Entity::getDescription).setCaption(i18n.get("Description"));
-		entityGrid.addColumn(entity -> i18n.get("Show"),
+		entityGrid.addColumn(entity -> i18n.get("View"),
 				new ButtonRenderer<Entity>(clickEvent -> {
 					getUI().getNavigator().navigateTo(EntityDetailView.NAME + "/" + clickEvent.getItem().getEntityName());
 			    }));

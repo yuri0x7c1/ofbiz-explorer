@@ -50,6 +50,7 @@ public class EntityDetailView extends CommonView implements View {
 
 		// field grid
 		fieldGrid = new Grid<>();
+		fieldGrid.setWidth("100%");
 		fieldGrid.setCaption(i18n.get("Fields"));
 		fieldGrid.addColumn(Field::getName).setCaption(i18n.get("Field.name"));
 		fieldGrid.addColumn(Field::getType).setCaption(i18n.get("Field.type"));
@@ -58,6 +59,7 @@ public class EntityDetailView extends CommonView implements View {
 
 		// relation grid
 		relationGrid = new Grid<>();
+		relationGrid.setWidth("100%");
 		relationGrid.setCaption(i18n.get("Relations"));
 		relationGrid.addColumn(Relation::getRelEntityName).setCaption(i18n.get("Relation.name"));
 		relationGrid.addColumn(Relation::getFkName).setCaption(i18n.get("Relation.fkName"));
