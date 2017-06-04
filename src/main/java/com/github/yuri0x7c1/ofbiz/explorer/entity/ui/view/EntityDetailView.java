@@ -10,6 +10,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.common.navigation.util.NavigationUtil
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
@@ -37,6 +38,8 @@ public class EntityDetailView extends CommonView implements View {
 
 	private Grid<Field> fieldGrid;
 
+	private Grid<Relation> relationGrid;
+
 	@PostConstruct
 	public void init() {
 		// back button
@@ -47,12 +50,20 @@ public class EntityDetailView extends CommonView implements View {
 
 		// field grid
 		fieldGrid = new Grid<>();
+		fieldGrid.setCaption(i18n.get("Fields"));
 		fieldGrid.addColumn(Field::getName).setCaption(i18n.get("Field.name"));
 		fieldGrid.addColumn(Field::getType).setCaption(i18n.get("Field.type"));
-
+		fieldGrid.addColumn(Field::getDescription).setCaption(i18n.get("Description"));
 		addComponent(fieldGrid);
 
-
+		// relation grid
+		relationGrid = new Grid<>();
+		relationGrid.setCaption(i18n.get("Relations"));
+		relationGrid.addColumn(Relation::getRelEntityName).setCaption(i18n.get("Relation.name"));
+		relationGrid.addColumn(Relation::getFkName).setCaption(i18n.get("Relation.fkName"));
+		relationGrid.addColumn(Relation::getType).setCaption(i18n.get("Relation.type"));
+		relationGrid.addColumn(Relation::getDescription).setCaption(i18n.get("Description"));
+		addComponent(relationGrid);
 	}
 
 	@Override
@@ -67,6 +78,7 @@ public class EntityDetailView extends CommonView implements View {
 		Entity entity = ofbizInstance.getAllEntities().get(entityName);
 
 		fieldGrid.setItems(entity.getField());
+		relationGrid.setItems(entity.getRelation());
 
 		setHeaderText(entityName);
 	}
