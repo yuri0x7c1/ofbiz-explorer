@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
+import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Services;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.Component;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.ComponentGroup;
@@ -187,5 +188,15 @@ public class OfbizUtil {
 		}
 
 		return instance;
+	}
+
+	public static List<Attribute> filterServiceAttributes(List<Object> autoAttributesOrAttribute) {
+		List<Attribute> attributes = new ArrayList<>();
+		for (Object attr : autoAttributesOrAttribute) {
+			if (attr instanceof Attribute) {
+				attributes.add((Attribute) attr);
+			}
+		}
+		return attributes;
 	}
 }

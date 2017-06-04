@@ -9,6 +9,7 @@ import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
 
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.sidebar.Sections;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.ui.view.EntityDetailView;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
@@ -17,6 +18,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.renderers.ButtonRenderer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,6 +43,11 @@ public class ServiceView extends CommonView implements View {
 		serviceGrid.setWidth("100%");
 		serviceGrid.addColumn(Service::getName).setCaption(i18n.get("Service.name"));
 		serviceGrid.addColumn(Service::getDescription).setCaption(i18n.get("Description"));
+		serviceGrid.addColumn(entity -> i18n.get("View"),
+				new ButtonRenderer<Service>(clickEvent -> {
+					getUI().getNavigator().navigateTo(ServiceDetailView.NAME + "/" + clickEvent.getItem().getName());
+			    }));
+
 
 		addComponent(serviceGrid);
 
