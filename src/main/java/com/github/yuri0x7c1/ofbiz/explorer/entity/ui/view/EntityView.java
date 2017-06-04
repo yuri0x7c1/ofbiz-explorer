@@ -16,6 +16,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.renderers.ButtonRenderer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +41,10 @@ public class EntityView extends CommonView implements View {
 		entityGrid.setWidth("100%");
 		entityGrid.addColumn(Entity::getEntityName).setCaption(i18n.get("Entity.name"));
 		entityGrid.addColumn(Entity::getDescription).setCaption(i18n.get("Description"));
+		entityGrid.addColumn(entity -> i18n.get("Show"),
+				new ButtonRenderer<Entity>(clickEvent -> {
+					getUI().getNavigator().navigateTo(EntityDetailView.NAME + "/" + clickEvent.getItem().getEntityName());
+			    }));
 
 		addComponent(entityGrid);
 

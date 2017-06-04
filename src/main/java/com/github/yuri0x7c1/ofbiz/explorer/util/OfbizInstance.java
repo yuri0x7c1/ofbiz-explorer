@@ -83,7 +83,7 @@ public class OfbizInstance {
 	 * @return
 	 */
 	public Map<String, Service> getAllServices() {
-		if (allEntities.isEmpty()) {
+		if (allServices.isEmpty()) {
 			componentGroups.forEach((componentGroupName, componentGroup) -> {
 				componentGroup.components.forEach((componentName, component) -> {
 					allServices.putAll(component.getServices());
