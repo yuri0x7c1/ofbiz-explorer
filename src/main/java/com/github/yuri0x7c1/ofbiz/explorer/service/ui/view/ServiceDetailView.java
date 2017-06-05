@@ -1,5 +1,8 @@
 package com.github.yuri0x7c1.ofbiz.explorer.service.ui.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +11,10 @@ import org.vaadin.viritin.button.MButton;
 
 import com.github.yuri0x7c1.ofbiz.explorer.common.navigation.util.NavigationUtil;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
+import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributes;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizUtil;
@@ -20,6 +26,9 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.themes.ValoTheme;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -36,7 +45,41 @@ public class ServiceDetailView extends CommonView implements View {
 	@Autowired
 	private OfbizInstance ofbizInstance;
 
-	private Grid<Attribute> parametersGrid;
+	private Grid<ServiceParameter> parametersGrid;
+
+	// TODO: move to separate class
+	@Builder
+	public static class ServiceParameter {
+		@Getter
+		@Setter
+		private String name;
+
+		@Getter
+		@Setter
+		private boolean optional;
+
+		@Getter
+		@Setter
+		private String type;
+
+		@Getter
+		@Setter
+		private String mode;
+
+		@Getter
+		@Setter
+		private boolean setInternally;
+
+		@Getter
+		@Setter
+		private String entityName;
+
+		/*
+		@Getter
+		@Setter
+		private String fieldName;
+		*/
+	}
 
 	@PostConstruct
 	public void init() {
@@ -50,7 +93,11 @@ public class ServiceDetailView extends CommonView implements View {
 		parametersGrid = new Grid<>();
 		parametersGrid.setWidth("100%");
 		parametersGrid.setCaption(i18n.get("Parameters"));
-		parametersGrid.addColumn(Attribute::getName).setCaption(i18n.get("Parameter.name"));
+		parametersGrid.addColumn(ServiceParameter::getName).setCaption(i18n.get("Parameter.name"));
+		parametersGrid.addColumn(ServiceParameter::isOptional).setCaption(i18n.get("Parameter.optional"));
+		parametersGrid.addColumn(ServiceParameter::getType).setCaption(i18n.get("Parameter.type"));
+		parametersGrid.addColumn(ServiceParameter::getMode).setCaption(i18n.get("Parameter.mode"));
+		parametersGrid.addColumn(ServiceParameter::getEntityName).setCaption(i18n.get("Parameter.entityName"));
 		addComponent(parametersGrid);
 	}
 
@@ -65,7 +112,42 @@ public class ServiceDetailView extends CommonView implements View {
 		String serviceName = event.getParameters();
 		Service service = ofbizInstance.getAllServices().get(serviceName);
 
-		parametersGrid.setItems(OfbizUtil.filterServiceAttributes(service.getAutoAttributesOrAttribute()));
+		// TODO: move to separate method
+		List<ServiceParameter> serviceParams = new ArrayList<>();
+		for (Object attr : service.getAutoAttributesOrAttribute()) {
+			if (attr instanceof Attribute) {
+				ServiceParameter serviceParam = ServiceParameter.builder()
+					.name(((Attribute) attr).getName())
+					.optional(Boolean.valueOf(((Attribute) attr).getOptional()))
+					.type(((Attribute) attr).getType())
+					.mode(((Attribute) attr).getMode())
+					.entityName(((Attribute) attr).getEntityName())
+					.build();
+				serviceParams.add(serviceParam);
+			}
+			else if (attr instanceof AutoAttributes) {
+				String entityName = ((AutoAttributes) attr).getEntityName();
+				if (entityName == null) entityName = service.getDefaultEntityName();
+				log.debug("entity name: {}", entityName);
+
+				String include = ((AutoAttributes) attr).getInclude();
+				Entity entity = ofbizInstance.getAllEntities().get(entityName);
+				List<Field> entityFields = OfbizUtil.getFields(entity, include);
+				for (Field f : entityFields) {
+					ServiceParameter serviceParam = ServiceParameter.builder()
+							.name(f.getName())
+							.optional(Boolean.valueOf(((AutoAttributes) attr).getOptional()))
+							.mode(((AutoAttributes) attr).getMode())
+							.entityName(entityName)
+							.build();
+					serviceParams.add(serviceParam);
+				}
+			}
+		}
+
+
+
+		parametersGrid.setItems(serviceParams);
 
 		setHeaderText(serviceName);
 	}

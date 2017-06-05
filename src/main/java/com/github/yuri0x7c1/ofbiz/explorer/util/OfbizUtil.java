@@ -12,7 +12,10 @@ import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
+import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributesInclude;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Services;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.Component;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.ComponentGroup;
@@ -198,5 +201,58 @@ public class OfbizUtil {
 			}
 		}
 		return attributes;
+	}
+
+	/**
+	 * Get pk fields from entity field list
+	 * @param entity
+	 * @return
+	 */
+	public static List<Field> getPkFields(Entity entity) {
+		List<Field> pkFields = new ArrayList<>();
+		for (Field field : entity.getField()) {
+			if (FieldType.ID_NE.getName().equals(field.getType()) ||
+					FieldType.ID_LONG_NE.getName().equals(field.getType()) ||
+					FieldType.ID_LONG_NE.getName().equals(field.getType())) {
+				pkFields.add(field);
+			}
+		}
+		return pkFields;
+	}
+
+	/**
+	 * Get non pk fields from entity field list
+	 * @param entity
+	 * @return
+	 */
+	public static List<Field> getNonpkFields(Entity entity) {
+		List<Field> nonpkFields = new ArrayList<>();
+		for (Field field : entity.getField()) {
+			if (!FieldType.ID_NE.getName().equals(field.getType()) &&
+					!FieldType.ID_LONG_NE.getName().equals(field.getType()) &&
+					!FieldType.ID_LONG_NE.getName().equals(field.getType())) {
+				nonpkFields.add(field);
+			}
+		}
+		return nonpkFields;
+	}
+
+	/**
+	 * Get fields from entity qualified by auto-attributes include parameter
+	 * @param entity
+	 * @param include
+	 * @return list of fields or empty list
+	 */
+	public static List<Field> getFields(Entity entity, String include) {
+		if (AutoAttributesInclude.PK.getName().equals(include)) {
+			return getPkFields(entity);
+		}
+		else if (AutoAttributesInclude.NONPK.getName().equals(include)) {
+			return getNonpkFields(entity);
+		}
+		else if (AutoAttributesInclude.ALL.getName().equals(include)) {
+			return entity.getField();
+		}
+		return new ArrayList<>();
 	}
 }
