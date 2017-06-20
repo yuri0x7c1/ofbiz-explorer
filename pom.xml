@@ -14,14 +14,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.3.RELEASE</version>
+		<version>1.5.4.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<vaadin-spring.version>2.0.0</vaadin-spring.version>
 		<vaadin.version>8.1.0.beta2</vaadin.version>
 		<vaadin4spring.version>2.0.0.RELEASE</vaadin4spring.version>
 	</properties>
@@ -40,24 +39,20 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.16.12</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- vaadin dependencies -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring</artifactId>
-			<version>${vaadin-spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot</artifactId>
-			<version>${vaadin-spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot-starter</artifactId>
-			<version>${vaadin-spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.vaadin.spring.extensions</groupId>
@@ -79,7 +74,7 @@
 			<artifactId>vaadin-spring-addon-eventbus</artifactId>
 			<version>${vaadin4spring.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.vaadin.spring.addons</groupId> <artifactId>vaadin-spring-addon-mvp</artifactId>
+		<!-- <dependency> <groupId>org.vaadin.spring.addons</groupId> <artifactId>vaadin-spring-addon-mvp</artifactId> 
 			<version>${vaadin4spring.version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.vaadin.spring.addons</groupId>
@@ -105,7 +100,6 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-compatibility-server</artifactId>
-			<version>${vaadin.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>vaadin-theme-compiler</artifactId>
@@ -116,7 +110,6 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-compatibility-client-compiled</artifactId>
-			<version>${vaadin.version}</version>
 		</dependency>
 	</dependencies>
 
