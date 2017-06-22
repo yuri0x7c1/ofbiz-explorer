@@ -21,7 +21,7 @@ import com.vaadin.ui.UI;
 @SpringUI
 @Theme("mytheme")
 @Push(transport = Transport.WEBSOCKET)
-@Widgetset("com.vaadin.v7.Vaadin7WidgetSet")
+// @Widgetset("com.vaadin.v7.Vaadin7WidgetSet")
 public class MainUI extends UI {
 
 	@Autowired

@@ -102,6 +102,7 @@
 		</dependency>
 
 		<!-- Vaadin 7 compatibility -->
+		<!--
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-compatibility-server</artifactId>
@@ -117,6 +118,13 @@
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-compatibility-client-compiled</artifactId>
 			<version>${vaadin.version}</version>
+		</dependency>
+		-->
+
+		<dependency>
+			<groupId>com.vaadin.pontus</groupId>
+			<artifactId>vizcomponent</artifactId>
+			<version>2.0</version>
 		</dependency>
 	</dependencies>
 
