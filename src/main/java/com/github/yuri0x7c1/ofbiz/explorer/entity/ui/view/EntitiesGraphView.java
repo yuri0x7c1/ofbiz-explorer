@@ -22,6 +22,7 @@ import com.vaadin.pontus.vizcomponent.VizComponent;
 import com.vaadin.pontus.vizcomponent.model.Graph;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Panel;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,8 +36,9 @@ public class EntitiesGraphView extends CommonView implements View {
 	@Autowired
 	private I18N i18n;
 
+
 	@Autowired
-	private OfbizInstance ofbizInstance;
+	private Graph entityGraph;
 
 	@PostConstruct
 	public void init() {
@@ -45,40 +47,19 @@ public class EntitiesGraphView extends CommonView implements View {
 		final VizComponent vizComponent = new VizComponent();
 		vizComponent.setSizeFull();
 
-		Graph graph = new Graph("Entities", Graph.GRAPH);
-		Map<String, Graph.Node> nodes = new HashMap<>();
 
-		int i = 0;
-		for (Entity entity : ofbizInstance.getAllEntities().values()) {
-			if (i > 100) break;
-			i++;
-
-			Graph.Node node = new Graph.Node(entity.getEntityName());
-			nodes.put(entity.getEntityName(), node);
-			// graph.addNode(node);
-		}
-
-		i = 0;
-		for (Entity entity : ofbizInstance.getAllEntities().values()) {
-			if (i > 100) break;
-			i++;
-
-			for (Relation rel : entity.getRelation()) {
-				Graph.Node node1 = nodes.get(entity.getEntityName());
-				Graph.Node node2 = nodes.get(rel.getRelEntityName());
-
-				if (node1 != null && node2 != null) {
-					graph.addEdge(node1, node2);
-				}
-			}
-		}
 
         setSizeFull();
-        vizComponent.drawGraph(graph);
-        addComponent(vizComponent);
-        setExpandRatio(vizComponent, 1);
-        setComponentAlignment(vizComponent, Alignment.MIDDLE_CENTER);
+        vizComponent.drawGraph(entityGraph);
+        // addComponent(vizComponent);
+        // setExpandRatio(vizComponent, 1);
+        // setComponentAlignment(vizComponent, Alignment.MIDDLE_CENTER);
 
+        Panel panel = new Panel("Graph G");
+        panel.setHeight("600px");
+        panel.setWidth("800px");
+        panel.setContent(vizComponent);
+        addComponent(panel);
 
 	}
 
