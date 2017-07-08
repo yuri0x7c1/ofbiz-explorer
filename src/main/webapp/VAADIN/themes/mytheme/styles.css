@@ -1081,7 +1081,7 @@
  */
 
 .v-vaadin-version:after {
-	content: "8.1.0.beta2";
+	content: "8.1.0.rc1";
 }
 
 .v-widget {
@@ -1774,31 +1774,6 @@ div.v-layout.v-horizontal.v-widget {
 	outline: none;
 	-webkit-box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
 	box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
-}
-
-.mytheme button {
-	font: inherit;
-	font-weight: 400;
-	line-height: 1.55;
-}
-
-.mytheme a {
-	cursor: pointer;
-	color: #197de1;
-	text-decoration: underline;
-	font-weight: inherit;
-	-webkit-transition: color 140ms;
-	-moz-transition: color 140ms;
-	transition: color 140ms;
-}
-
-.mytheme a:hover {
-	color: #4396ea;
-}
-
-.mytheme a.v-disabled {
-	opacity: 0.5;
-	filter: alpha(opacity=50) ;
 }
 
 .mytheme .v-disabled {
@@ -8186,12 +8161,28 @@ div.v-layout.v-horizontal.v-widget {
 }
 
 .mytheme .v-link a {
+	cursor: pointer;
+	color: #197de1;
+	text-decoration: underline;
+	font-weight: inherit;
+	-webkit-transition: color 140ms;
+	-moz-transition: color 140ms;
+	transition: color 140ms;
 	cursor: inherit;
 	color: inherit;
 	text-decoration: inherit;
 	-webkit-transition: inherit;
 	-moz-transition: inherit;
 	transition: inherit;
+}
+
+.mytheme .v-link a:hover {
+	color: #4396ea;
+}
+
+.mytheme .v-link a.v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
 }
 
 .mytheme .v-link .v-icon {
@@ -9574,6 +9565,11 @@ div.v-layout.v-horizontal.v-widget {
 	z-index: 100;
 }
 
+.mytheme .v-tree8-expander {
+	display: inline-block;
+	vertical-align: top;
+}
+
 .mytheme .v-tree8-expander::before {
 	display: inline-block;
 	width: 1.5em;
@@ -9663,6 +9659,7 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme .v-tree8-cell-content {
 	display: inline-block;
+	vertical-align: middle;
 }
 
 .mytheme .v-tree8-row-focused::before {
@@ -10627,6 +10624,11 @@ div.v-layout.v-horizontal.v-widget {
 	z-index: 100;
 }
 
+.mytheme .v-treegrid-expander {
+	display: inline-block;
+	vertical-align: top;
+}
+
 .mytheme .v-treegrid-expander::before {
 	display: inline-block;
 	width: 1.5em;
@@ -10716,6 +10718,7 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme .v-treegrid-cell-content {
 	display: inline-block;
+	vertical-align: middle;
 }
 
 .mytheme .v-treegrid-row-focused::before {
@@ -13406,6 +13409,12 @@ div.v-layout.v-horizontal.v-widget {
 .mytheme .no-box-drag-hints.v-ddwrapper:after, .mytheme .no-box-drag-hints .v-ddwrapper:after {
 	display: none !important;
 	content: none;
+}
+
+.mytheme button {
+	font: inherit;
+	font-weight: 400;
+	line-height: 1.55;
 }
 
 .mytheme .v-nativebutton {

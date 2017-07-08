@@ -21,7 +21,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<vaadin.version>8.1.0.beta2</vaadin.version>
+		<vaadin.version>8.1.0.rc1</vaadin.version>
 		<vaadin4spring.version>2.0.0.RELEASE</vaadin4spring.version>
 	</properties>
 
@@ -74,7 +74,7 @@
 			<artifactId>vaadin-spring-addon-eventbus</artifactId>
 			<version>${vaadin4spring.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.vaadin.spring.addons</groupId> <artifactId>vaadin-spring-addon-mvp</artifactId> 
+		<!-- <dependency> <groupId>org.vaadin.spring.addons</groupId> <artifactId>vaadin-spring-addon-mvp</artifactId>
 			<version>${vaadin4spring.version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.vaadin.spring.addons</groupId>
