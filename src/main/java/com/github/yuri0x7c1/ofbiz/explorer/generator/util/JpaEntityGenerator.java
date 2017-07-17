@@ -1,6 +1,10 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
+import javax.persistence.Column;
+import javax.persistence.Table;
+
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
@@ -28,15 +32,26 @@ public class JpaEntityGenerator {
 	}
 
 	public String generate() {
+		// create entity class
 		final JavaClassSource jpaEntityClass = Roaster.create(JavaClassSource.class);
 		jpaEntityClass.setPackage(entity.getPackageName())
 			.setName(entity.getEntityName());
 
+		jpaEntityClass.addAnnotation(javax.persistence.Entity.class);
+		/*
+		jpaEntityClass.addAnnotation(Table.class)
+			.setLiteralValue("name", entity.getTableName());
+		*/
+
+		// create columns
 		for (Field field : entity.getField()) {
-			jpaEntityClass.addField()
+			FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField()
 				.setName(field.getName())
 				.setType(getJavaType(field.getType()))
 				.setPrivate();
+
+
+			fieldSource.addAnnotation(Column.class);
 		}
 
 		return jpaEntityClass.toString();
