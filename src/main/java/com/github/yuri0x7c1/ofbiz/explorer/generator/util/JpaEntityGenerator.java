@@ -1,7 +1,10 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.persistence.Column;
-import javax.persistence.Table;
+import javax.persistence.Id;
 
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -43,48 +46,39 @@ public class JpaEntityGenerator {
 			.setLiteralValue("name", entity.getTableName());
 		*/
 
-		// create columns
-		for (Field field : entity.getField()) {
+		Map<String, Field> fieldMap = entity.getFieldMap();
+
+		// get primary keys
+		List<String> primaryKeyNames = entity.getPrimaryKeyNames();
+		if (primaryKeyNames.size() == 1) {
+			Field field = fieldMap.get(primaryKeyNames.get(0));
 			FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField()
 				.setName(field.getName())
-				.setType(getJavaType(field.getType()))
+				.setType(field.getJavaType())
 				.setPrivate();
 
-
+			fieldSource.addAnnotation(Id.class);
 			fieldSource.addAnnotation(Column.class);
+		}
+		else if (primaryKeyNames.size() > 1) {
+			// composite key
+		}
+
+		// create columns
+		for (Field field : entity.getField()) {
+			if (!primaryKeyNames.contains(field.getName())) {
+				FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField()
+					.setName(field.getName())
+					.setType(field.getJavaType())
+					.setPrivate();
+
+
+				fieldSource.addAnnotation(Column.class);
+			}
 		}
 
 		return jpaEntityClass.toString();
 	}
 
-	private String getJavaType(String type) {
-		if ("blob".equals(type)) {
-			return "java.sql.Blob";
-		} else if ("object".equals(type)) {
-			return "Object";
-		} else if ("byte-array".equals(type)) {
-			return "byte[]";
 
-		} else if ("currency-precise".equals(type)) {
-			return "BigDecimal";
-		} else if ("currency-amount".equals(type)) {
-			return "BigDecimal";
-		} else if ("fixed-point".equals(type)) {
-			return "BigDecimal";
-
-		} else if ("date".equals(type)) {
-			return "Date";
-		} else if ("time".equals(type)) {
-			return "Time";
-		} else if ("date-time".equals(type)) {
-			return "Date";
-
-		} else if ("numeric".equals(type)) {
-			return "Long";
-		} else if ("floating-point".equals(type)) {
-			return "Double";
-		}
-
-		return "String";
-}
 }

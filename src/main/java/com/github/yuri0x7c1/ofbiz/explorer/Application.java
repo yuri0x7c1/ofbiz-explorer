@@ -28,7 +28,7 @@ public class Application implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-			JpaEntityGenerator g = new JpaEntityGenerator(ofbizInstance, "BudgetItem");
+			JpaEntityGenerator g = new JpaEntityGenerator(ofbizInstance, "Budget");
 			log.debug(g.generate());
 	}
 }
