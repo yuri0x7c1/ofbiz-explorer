@@ -8,15 +8,20 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.springframework.util.StringUtils;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.Getter;
@@ -123,6 +128,29 @@ public class JpaEntityGenerator {
 				fieldSource.addAnnotation(Setter.class);
 				fieldSource.addAnnotation(Column.class)
 					.setLiteralValue("name", columnName);
+			}
+		}
+
+		// create relations
+		for (Relation relation : entity.getRelation()) {
+			Entity relationEntity = ofbizInstance.getAllEntities().get(relation.getRelEntityName());
+			FieldSource<JavaClassSource> relationSource = jpaEntityClass.addField()
+				.setName(StringUtils.uncapitalize(relationEntity.getEntityName()))
+				.setType(relationEntity.getPackageName() + "." + relationEntity.getEntityName())
+				.setPrivate();
+
+			relationSource.addAnnotation(Getter.class);
+			relationSource.addAnnotation(Setter.class);
+
+			if (Relation.TYPE_ONE.equals(relation.getType())) {
+				relationSource.addAnnotation(ManyToOne.class);
+			}
+			else if (Relation.TYPE_MANY.equals(relation.getType())) {
+				relationSource.addAnnotation(ManyToMany.class);
+			}
+
+			if (relation.getKeyMap().size() == 1) {
+				relationSource.addAnnotation(JoinColumn.class);
 			}
 		}
 
