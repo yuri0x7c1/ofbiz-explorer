@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -41,10 +42,9 @@ public class JpaEntityGenerator {
 			.setName(entity.getEntityName());
 
 		jpaEntityClass.addAnnotation(javax.persistence.Entity.class);
-		/*
+		String tableName = String.format("\"%s\"", entity.getTableName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(entity.getEntityName()) : entity.getTableName());
 		jpaEntityClass.addAnnotation(Table.class)
-			.setLiteralValue("name", entity.getTableName());
-		*/
+			.setLiteralValue("name", tableName);
 
 		Map<String, Field> fieldMap = entity.getFieldMap();
 
@@ -58,7 +58,9 @@ public class JpaEntityGenerator {
 				.setPrivate();
 
 			fieldSource.addAnnotation(Id.class);
-			fieldSource.addAnnotation(Column.class);
+			String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
+			fieldSource.addAnnotation(Column.class)
+				.setLiteralValue("name", columnName);
 		}
 		else if (primaryKeyNames.size() > 1) {
 			// composite key
@@ -72,8 +74,9 @@ public class JpaEntityGenerator {
 					.setType(field.getJavaType())
 					.setPrivate();
 
-
-				fieldSource.addAnnotation(Column.class);
+				String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
+				fieldSource.addAnnotation(Column.class)
+					.setLiteralValue("name", columnName);
 			}
 		}
 
