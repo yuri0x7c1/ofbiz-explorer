@@ -66,8 +66,7 @@ public class JpaEntityGenerator {
 
 		// get primary keys
 		List<String> primaryKeyNames = entity.getPrimaryKeyNames();
-		// single column id
-		if (primaryKeyNames.size() == 1) {
+		if (primaryKeyNames.size() == 1) { // single column id
 			Field field = fieldMap.get(primaryKeyNames.get(0));
 			FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField()
 				.setName(field.getName())
@@ -81,8 +80,7 @@ public class JpaEntityGenerator {
 			fieldSource.addAnnotation(Column.class)
 				.setLiteralValue("name", columnName);
 		}
-		// composite id
-		else if (primaryKeyNames.size() > 1) {
+		else if (primaryKeyNames.size() > 1) { // composite id
 			// create id class
 			JavaClassSource jpaEntityIdClass = Roaster.create(JavaClassSource.class);
 			jpaEntityIdClass.setName(entity.getEntityName() + "Id");
