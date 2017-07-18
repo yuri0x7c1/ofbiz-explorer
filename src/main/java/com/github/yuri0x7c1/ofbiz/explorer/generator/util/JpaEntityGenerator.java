@@ -1,5 +1,6 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -41,10 +43,21 @@ public class JpaEntityGenerator {
 		jpaEntityClass.setPackage(entity.getPackageName())
 			.setName(entity.getEntityName());
 
+		// add entity annotations
 		jpaEntityClass.addAnnotation(javax.persistence.Entity.class);
 		String tableName = String.format("\"%s\"", entity.getTableName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(entity.getEntityName()) : entity.getTableName());
 		jpaEntityClass.addAnnotation(Table.class)
 			.setLiteralValue("name", tableName);
+
+		// add serialialization stuff
+		jpaEntityClass.addInterface(Serializable.class);
+		jpaEntityClass.addField()
+		  .setName("serialVersionUID")
+		  .setType(long.class)
+		  .setLiteralInitializer(String.valueOf(RandomUtils.nextLong(0, Long.MAX_VALUE-1)) + "L")
+		  .setPublic()
+		  .setStatic(true)
+		  .setFinal(true);
 
 		Map<String, Field> fieldMap = entity.getFieldMap();
 
