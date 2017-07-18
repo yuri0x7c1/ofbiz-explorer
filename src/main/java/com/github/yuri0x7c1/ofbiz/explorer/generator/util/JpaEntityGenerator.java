@@ -49,7 +49,7 @@ public class JpaEntityGenerator {
 		jpaEntityClass.addAnnotation(Table.class)
 			.setLiteralValue("name", tableName);
 
-		// add serialialization stuff
+		// add serialization stuff
 		jpaEntityClass.addInterface(Serializable.class);
 		jpaEntityClass.addField()
 		  .setName("serialVersionUID")
