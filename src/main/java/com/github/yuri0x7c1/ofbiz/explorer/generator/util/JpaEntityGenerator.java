@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -18,6 +20,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class JpaEntityGenerator {
 	@Getter
@@ -63,6 +66,7 @@ public class JpaEntityGenerator {
 
 		// get primary keys
 		List<String> primaryKeyNames = entity.getPrimaryKeyNames();
+		// single column id
 		if (primaryKeyNames.size() == 1) {
 			Field field = fieldMap.get(primaryKeyNames.get(0));
 			FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField()
@@ -70,13 +74,42 @@ public class JpaEntityGenerator {
 				.setType(field.getJavaType())
 				.setPrivate();
 
+			fieldSource.addAnnotation(Getter.class);
+			fieldSource.addAnnotation(Setter.class);
 			fieldSource.addAnnotation(Id.class);
 			String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
 			fieldSource.addAnnotation(Column.class)
 				.setLiteralValue("name", columnName);
 		}
+		// composite id
 		else if (primaryKeyNames.size() > 1) {
-			// composite key
+			// create id class
+			JavaClassSource jpaEntityIdClass = Roaster.create(JavaClassSource.class);
+			jpaEntityIdClass.setName(entity.getEntityName() + "Id");
+
+			// add annotation
+			jpaEntityIdClass.addAnnotation(Embeddable.class);
+
+			// add fields
+			for (String primaryKeyName : primaryKeyNames) {
+				Field field = fieldMap.get(primaryKeyName);
+				FieldSource<JavaClassSource> fieldSource = jpaEntityIdClass.addField()
+					.setName(field.getName())
+					.setType(field.getJavaType())
+					.setPrivate();
+
+				fieldSource.addAnnotation(Getter.class);
+				fieldSource.addAnnotation(Setter.class);
+
+			}
+			// add id class
+			jpaEntityClass.addNestedType(jpaEntityIdClass).setPublic().setStatic(true).setFinal(true);
+
+			// add id field
+			FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField().setName("id").setType(jpaEntityIdClass).setPrivate();
+			fieldSource.addAnnotation(Getter.class);
+			fieldSource.addAnnotation(Setter.class);
+			fieldSource.addAnnotation(EmbeddedId.class);
 		}
 
 		// create columns
@@ -88,6 +121,8 @@ public class JpaEntityGenerator {
 					.setPrivate();
 
 				String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
+				fieldSource.addAnnotation(Getter.class);
+				fieldSource.addAnnotation(Setter.class);
 				fieldSource.addAnnotation(Column.class)
 					.setLiteralValue("name", columnName);
 			}
