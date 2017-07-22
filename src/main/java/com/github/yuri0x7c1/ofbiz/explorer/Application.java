@@ -8,8 +8,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 
-import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
-import com.github.yuri0x7c1.ofbiz.explorer.generator.util.JpaEntityGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +26,6 @@ public class Application implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-			JpaEntityGenerator g = new JpaEntityGenerator(ofbizInstance, "BudgetAttribute");
-			log.debug(g.generate());
+		// startup tasks
 	}
 }
