@@ -1081,7 +1081,7 @@
  */
 
 .v-vaadin-version:after {
-	content: "8.1.0.rc1";
+	content: "8.1.0.rc2";
 }
 
 .v-widget {
@@ -2982,6 +2982,7 @@ div.v-layout.v-horizontal.v-widget {
 	width: 37px;
 	line-height: 1;
 	padding-top: 0.12em;
+	margin-left: 9px;
 }
 
 .mytheme .v-filterselect[class*="prompt"] > [class*="input"] {
@@ -3405,6 +3406,7 @@ div.v-layout.v-horizontal.v-widget {
 	width: 28px;
 	line-height: 1;
 	padding-top: 0.12em;
+	margin-left: 5px;
 }
 
 .mytheme .v-filterselect-tiny [class$="button"] {
@@ -3524,6 +3526,7 @@ div.v-layout.v-horizontal.v-widget {
 	width: 31px;
 	line-height: 1;
 	padding-top: 0.12em;
+	margin-left: 6px;
 }
 
 .mytheme .v-filterselect-compact [class$="button"], .mytheme .v-filterselect-small [class$="button"] {
@@ -3648,6 +3651,7 @@ div.v-layout.v-horizontal.v-widget {
 	width: 44px;
 	line-height: 1;
 	padding-top: 0.12em;
+	margin-left: 8px;
 }
 
 .mytheme .v-filterselect-large [class$="button"] {
@@ -3768,6 +3772,7 @@ div.v-layout.v-horizontal.v-widget {
 	width: 59px;
 	line-height: 1;
 	padding-top: 0.12em;
+	margin-left: 10px;
 }
 
 .mytheme .v-filterselect-huge [class$="button"] {
@@ -4420,6 +4425,10 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme .v-grid-cell.frozen  + th, .mytheme .v-grid-cell.frozen  + td {
 	border-left: none;
+}
+
+.mytheme .v-grid-cell div.component-wrap {
+	width: 100%;
 }
 
 .mytheme .v-grid-row > td, .mytheme .v-grid-editor-cells > div {
@@ -8951,6 +8960,10 @@ div.v-layout.v-horizontal.v-widget {
 	border-left: none;
 }
 
+.mytheme .v-tree8-cell div.component-wrap {
+	width: 100%;
+}
+
 .mytheme .v-tree8-row > td, .mytheme .v-tree8-editor-cells > div {
 	border-left: 1px solid #d4d4d4;
 	border-bottom: 1px solid #d4d4d4;
@@ -10008,6 +10021,10 @@ div.v-layout.v-horizontal.v-widget {
 
 .mytheme .v-treegrid-cell.frozen  + th, .mytheme .v-treegrid-cell.frozen  + td {
 	border-left: none;
+}
+
+.mytheme .v-treegrid-cell div.component-wrap {
+	width: 100%;
 }
 
 .mytheme .v-treegrid-row > td, .mytheme .v-treegrid-editor-cells > div {
