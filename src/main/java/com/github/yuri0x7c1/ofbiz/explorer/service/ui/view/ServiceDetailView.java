@@ -13,6 +13,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.common.navigation.util.NavigationUtil
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceParameter;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributes;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
@@ -26,11 +27,7 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.themes.ValoTheme;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @SpringView(name = ServiceDetailView.NAME)
@@ -46,40 +43,6 @@ public class ServiceDetailView extends CommonView implements View {
 	private OfbizInstance ofbizInstance;
 
 	private Grid<ServiceParameter> parametersGrid;
-
-	// TODO: move to separate class
-	@Builder
-	public static class ServiceParameter {
-		@Getter
-		@Setter
-		private String name;
-
-		@Getter
-		@Setter
-		private boolean optional;
-
-		@Getter
-		@Setter
-		private String type;
-
-		@Getter
-		@Setter
-		private String mode;
-
-		@Getter
-		@Setter
-		private boolean setInternally;
-
-		@Getter
-		@Setter
-		private String entityName;
-
-		/*
-		@Getter
-		@Setter
-		private String fieldName;
-		*/
-	}
 
 	@PostConstruct
 	public void init() {
