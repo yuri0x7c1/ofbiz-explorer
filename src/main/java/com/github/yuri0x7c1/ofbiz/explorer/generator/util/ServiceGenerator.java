@@ -8,6 +8,8 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceParameter;
@@ -33,6 +35,9 @@ public class ServiceGenerator {
 		JavaClassSource serviceSource = Roaster.create(JavaClassSource.class)
 			.setName(StringUtils.capitalize(service.getName()) + "Service");
 
+		serviceSource.addAnnotation(Component.class);
+
+		// add static service name field
 		serviceSource.addField()
 			.setName("NAME")
 			.setType(String.class)
@@ -40,6 +45,13 @@ public class ServiceGenerator {
 			.setPublic()
 			.setStatic(true)
 			.setFinal(true);
+
+		// add dispatcher autowired field
+		serviceSource.addField()
+			.setName("dispatcher")
+			.setType("org.apache.ofbiz.service.LocalDispatcher")
+			.setPrivate()
+			.addAnnotation(Autowired.class);
 
 		List<ServiceParameter> inParams = ServiceUtil.getServiceInParameters(service, ofbizInstance);
 		List<ServiceParameter> outParams = ServiceUtil.getServiceOutParameters(service, ofbizInstance);
