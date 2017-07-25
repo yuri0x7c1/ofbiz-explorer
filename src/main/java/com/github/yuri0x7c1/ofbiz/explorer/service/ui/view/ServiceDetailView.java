@@ -14,6 +14,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceParameter;
+import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceUtil;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributes;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
@@ -76,40 +77,7 @@ public class ServiceDetailView extends CommonView implements View {
 		Service service = ofbizInstance.getAllServices().get(serviceName);
 
 		// TODO: move to separate method
-		List<ServiceParameter> serviceParams = new ArrayList<>();
-		for (Object attr : service.getAutoAttributesOrAttribute()) {
-			if (attr instanceof Attribute) {
-				ServiceParameter serviceParam = ServiceParameter.builder()
-					.name(((Attribute) attr).getName())
-					.optional(Boolean.valueOf(((Attribute) attr).getOptional()))
-					.type(((Attribute) attr).getType())
-					.mode(((Attribute) attr).getMode())
-					.entityName(((Attribute) attr).getEntityName())
-					.build();
-				serviceParams.add(serviceParam);
-			}
-			else if (attr instanceof AutoAttributes) {
-				String entityName = ((AutoAttributes) attr).getEntityName();
-				if (entityName == null) entityName = service.getDefaultEntityName();
-				log.debug("entity name: {}", entityName);
-
-				String include = ((AutoAttributes) attr).getInclude();
-				Entity entity = ofbizInstance.getAllEntities().get(entityName);
-				List<Field> entityFields = OfbizUtil.getFields(entity, include);
-				for (Field f : entityFields) {
-					ServiceParameter serviceParam = ServiceParameter.builder()
-							.name(f.getName())
-							.optional(Boolean.valueOf(((AutoAttributes) attr).getOptional()))
-							.mode(((AutoAttributes) attr).getMode())
-							.entityName(entityName)
-							.build();
-					serviceParams.add(serviceParam);
-				}
-			}
-		}
-
-
-
+		List<ServiceParameter> serviceParams = ServiceUtil.getServiceParameters(service, ofbizInstance);
 		parametersGrid.setItems(serviceParams);
 
 		setHeaderText(serviceName);
