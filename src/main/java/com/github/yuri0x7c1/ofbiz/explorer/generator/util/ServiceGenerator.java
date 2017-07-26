@@ -72,8 +72,16 @@ public class ServiceGenerator {
 
 			// create In type fields
 			for (ServiceParameter param : inParams) {
+				String paramName = param.getName();
+				String paramKey = param.getName();
+				if ("login.username".equals(param.getName())) {
+					paramName = "username";
+				}
+				else if ("login.password".equals(param.getName())) {
+					paramName = "password";
+				}
 				FieldSource<JavaClassSource> fieldSource = inTypeSource.addField()
-					.setName(param.getName().replace('.', '_'))
+					.setName(paramName)
 					.setType(ServiceUtil.getParameterType(param))
 					.setPrivate();
 
@@ -81,10 +89,10 @@ public class ServiceGenerator {
 				fieldSource.addAnnotation(Setter.class);
 
 				// append param to "toMap()" body
-				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", param.getName(), param.getName().replace('.', '_')));
+				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", paramKey, paramName));
 
 				// append param to "fromMap()" body
-				fromMapMethodBody.append(String.format("result.set%s(map.get(\"%s\"));", StringUtils.capitalize(param.getName().replace('.', '_')), param.getName()));
+				fromMapMethodBody.append(String.format("result.set%s(map.get(\"%s\"));", StringUtils.capitalize(paramName), paramKey));
 			}
 
 			// add "toMap() method return value
