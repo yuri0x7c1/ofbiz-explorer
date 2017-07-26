@@ -30,6 +30,17 @@ public class ServiceParameter {
 	@Setter
 	private String entityName;
 
+	public ServiceParameter(String name, boolean optional, String type, String mode, boolean setInternally,
+			String entityName) {
+		super();
+		this.name = name;
+		this.optional = optional;
+		this.type = type;
+		this.mode = mode;
+		this.setInternally = setInternally;
+		this.entityName = entityName;
+	}
+
 	/*
 	@Getter
 	@Setter

@@ -73,7 +73,7 @@ public class ServiceGenerator {
 			// create In type fields
 			for (ServiceParameter param : inParams) {
 				FieldSource<JavaClassSource> fieldSource = inTypeSource.addField()
-					.setName(param.getName())
+					.setName(param.getName().replace('.', '_'))
 					.setType(ServiceUtil.getParameterType(param))
 					.setPrivate();
 
@@ -81,10 +81,10 @@ public class ServiceGenerator {
 				fieldSource.addAnnotation(Setter.class);
 
 				// append param to "toMap()" body
-				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", param.getName(), param.getName()));
+				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", param.getName(), param.getName().replace('.', '_')));
 
 				// append param to "fromMap()" body
-				fromMapMethodBody.append(String.format("result.set%s(map.get(\"%s\"));", StringUtils.capitalize(param.getName()), param.getName()));
+				fromMapMethodBody.append(String.format("result.set%s(map.get(\"%s\"));", StringUtils.capitalize(param.getName().replace('.', '_')), param.getName()));
 			}
 
 			// add "toMap() method return value
@@ -196,9 +196,13 @@ public class ServiceGenerator {
 		serviceSource.addMethod()
 			.setName("runSync")
 			.setPublic()
-			.addThrows("org.apache.ofbiz.service.GenericServiceException")
 			.setBody("Map result = null;"
-				+ "result = dispatcher.runSync(NAME, in.toMap());"
+				+ "try {"
+				+ "	result = dispatcher.runSync(NAME, in.toMap());"
+				+ "}"
+				+ "catch (Exception e) {"
+				+ "	log.error(\"Error\", e);"
+				+ "}"
 				+ "return Out.fromMap(result);"
 			);
 

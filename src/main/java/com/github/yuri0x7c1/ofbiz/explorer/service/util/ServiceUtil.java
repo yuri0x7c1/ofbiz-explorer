@@ -49,6 +49,20 @@ public class ServiceUtil {
 				}
 			}
 		}
+
+		// add internal parameters
+		serviceParams.add(new ServiceParameter("locale", true, "java.util.Locale", "INOUT", true, null));
+		serviceParams.add(new ServiceParameter("login.password", true, "String", "IN", true, null));
+		serviceParams.add(new ServiceParameter("login.username", true, "String", "IN", true, null));
+		serviceParams.add(new ServiceParameter("timeZone", true, "java.util.TimeZone", "INOUT", true, null));
+		serviceParams.add(new ServiceParameter("userLogin", true, "org.apache.ofbiz.entity.GenericValue", "INOUT", true, null));
+
+		serviceParams.add(new ServiceParameter("errorMessage", true, "String", "OUT", true, null));
+		serviceParams.add(new ServiceParameter("errorMessageList", true, "List", "OUT", true, null));
+		serviceParams.add(new ServiceParameter("responseMessage", true, "String", "OUT", true, null));
+		serviceParams.add(new ServiceParameter("successMessage", true, "String", "OUT", true, null));
+		serviceParams.add(new ServiceParameter("successMessageList", true, "List", "OUT", true, null));
+
 		return serviceParams;
 	}
 
@@ -78,7 +92,7 @@ public class ServiceUtil {
 		return outParams;
 	}
 
-	public static Class getParameterType(ServiceParameter parameter) {
+	public static Class<?> getParameterType(ServiceParameter parameter) {
 		if ("String".equals(parameter.getType())) {
 			return String.class;
 		}
