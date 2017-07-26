@@ -119,4 +119,19 @@ public class ServiceUtil {
 		}
 		return Object.class;
 	}
+
+	public static String locationToPackageName(String location) {
+		final String LOCATION_PACKAGE = "org.apache.ofbiz";
+		final String LOCATION_FILESYSTEM = "location://";
+
+		String packageName = "default";
+
+		if (location.startsWith(LOCATION_PACKAGE)) {
+			packageName = location.substring(0, location.lastIndexOf('.'));
+		}
+		else if (location.startsWith(LOCATION_FILESYSTEM)) {
+			packageName = location.substring(LOCATION_FILESYSTEM.length(), location.lastIndexOf('/'));
+		}
+		return packageName;
+	}
 }

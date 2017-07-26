@@ -1,9 +1,12 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -19,7 +22,9 @@ import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ServiceGenerator {
 	@Getter
 	@Setter
@@ -32,8 +37,13 @@ public class ServiceGenerator {
 	public String generate() throws Exception {
 		if (service == null ) throw new Exception("Service must not be null");
 
+		String packageName = ServiceUtil.locationToPackageName(service.getLocation());
+		log.info("package name {}", packageName);
+
+		String serviceClassName = StringUtils.capitalize(service.getName()) + "Service";
 		JavaClassSource serviceSource = Roaster.create(JavaClassSource.class)
-			.setName(StringUtils.capitalize(service.getName()) + "Service");
+			.setName(serviceClassName)
+			.setPackage(packageName);
 
 		serviceSource.addAnnotation(Component.class);
 
@@ -213,6 +223,10 @@ public class ServiceGenerator {
 				+ "}"
 				+ "return Out.fromMap(result);"
 			);
+
+		File src = new File(FilenameUtils.concat("/tmp/services", GeneratorUtil.packageNameToPath(packageName)), serviceClassName + ".java");
+
+		FileUtils.writeStringToFile(src,  serviceSource.toString());
 
 		return serviceSource.toString();
 	}

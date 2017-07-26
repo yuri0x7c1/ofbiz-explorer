@@ -12,4 +12,13 @@ public class GeneratorUtil {
 		String[] words = StringUtils.splitByCharacterTypeCamelCase(camelCaseString);
 		return StringUtils.join(words, "_").toUpperCase();
 	}
+
+	/**
+	 * Converts package name to file system path
+	 * @param packageName
+	 * @return
+	 */
+	public static String packageNameToPath(String packageName) {
+		return packageName.replaceAll("\\.", "/");
+	}
 }
