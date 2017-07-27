@@ -46,6 +46,7 @@ public class ServiceGenerator {
 			.setPackage(packageName);
 
 		serviceSource.addAnnotation(Component.class);
+		serviceSource.addAnnotation(Slf4j.class);
 
 		// add static service name field
 		serviceSource.addField()
@@ -75,6 +76,7 @@ public class ServiceGenerator {
 			// some outer class imports
 			serviceSource.addImport(Map.class);
 			serviceSource.addImport(HashMap.class);
+			serviceSource.addImport(List.class);
 
 			// toMap method body
 			StringBuilder toMapMethodBody = new StringBuilder("Map map = new HashMap();");
@@ -102,7 +104,10 @@ public class ServiceGenerator {
 				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", paramKey, paramName));
 
 				// append param to "fromMap()" body
-				fromMapMethodBody.append(String.format("result.set%s(map.get(\"%s\"));", StringUtils.capitalize(paramName), paramKey));
+				fromMapMethodBody.append(String.format("result.set%s(%s map.get(\"%s\"));",
+						StringUtils.capitalize(paramName),
+						"(" + ServiceUtil.getParameterType(param).getSimpleName() + ")",
+						paramKey));
 			}
 
 			// add "toMap() method return value
@@ -151,6 +156,7 @@ public class ServiceGenerator {
 			// some outer class imports
 			serviceSource.addImport(Map.class);
 			serviceSource.addImport(HashMap.class);
+			serviceSource.addImport(List.class);
 
 			// toMap method body
 			StringBuilder toMapMethodBody = new StringBuilder("Map map = new HashMap();");
@@ -170,7 +176,10 @@ public class ServiceGenerator {
 				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", param.getName(), param.getName()));
 
 				// append param to "fromMap()" body
-				fromMapMethodBody.append(String.format("result.set%s(map.get(\"%s\"));", StringUtils.capitalize(param.getName()), param.getName()));
+				fromMapMethodBody.append(String.format("result.set%s(%smap.get(\"%s\"));",
+						StringUtils.capitalize(param.getName()),
+						"(" + ServiceUtil.getParameterType(param).getSimpleName() + ")",
+						param.getName()));
 			}
 
 			// add "toMap() method return value

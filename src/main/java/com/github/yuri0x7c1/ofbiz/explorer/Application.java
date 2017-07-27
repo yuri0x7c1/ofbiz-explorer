@@ -27,7 +27,7 @@ public class Application implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		ServiceGenerator generator = new ServiceGenerator();
 		generator.setOfbizInstance(ofbizInstance);
-		generator.setService(ofbizInstance.getAllServices().get("finAccountDeposit"));
+		generator.setService(ofbizInstance.getAllServices().get("findPartiesById"));
 
 		log.info(generator.generate());
 	}

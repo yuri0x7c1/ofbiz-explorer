@@ -122,15 +122,17 @@ public class ServiceUtil {
 
 	public static String locationToPackageName(String location) {
 		final String LOCATION_PACKAGE = "org.apache.ofbiz";
-		final String LOCATION_FILESYSTEM = "location://";
+		final String LOCATION_COMPONENT = "component://";
 
-		String packageName = "default";
+		String packageName = "org.apache.ofbiz";
 
-		if (location.startsWith(LOCATION_PACKAGE)) {
-			packageName = location.substring(0, location.lastIndexOf('.'));
-		}
-		else if (location.startsWith(LOCATION_FILESYSTEM)) {
-			packageName = location.substring(LOCATION_FILESYSTEM.length(), location.lastIndexOf('/'));
+		if (location != null) {
+			if (location.startsWith(LOCATION_PACKAGE)) {
+				packageName = location.substring(0, location.lastIndexOf('.'));
+			}
+			else if (location.startsWith(LOCATION_COMPONENT)) {
+				packageName = packageName + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
+			}
 		}
 		return packageName;
 	}
