@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
+import org.springframework.core.env.Environment;
 
 import com.github.yuri0x7c1.ofbiz.explorer.generator.util.ServiceGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
@@ -19,16 +20,24 @@ public class Application implements CommandLineRunner {
 	@Autowired
 	private OfbizInstance ofbizInstance;
 
+	@Autowired
+	private Environment env;
+
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
+		log.info(env.getProperty("generator.destination_path"));
+
+		/*
 		ServiceGenerator generator = new ServiceGenerator();
 		generator.setOfbizInstance(ofbizInstance);
 		generator.setService(ofbizInstance.getAllServices().get("findPartiesById"));
+		generator.setDestinationPath(env.getProperty("generator.destination_path"));
 
 		log.info(generator.generate());
+		*/
 	}
 }

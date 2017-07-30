@@ -34,6 +34,11 @@ public class ServiceGenerator {
 	@Setter
 	private Service service;
 
+	@Getter
+	@Setter
+	private String destinationPath;
+
+
 	public String generate() throws Exception {
 		if (service == null ) throw new Exception("Service must not be null");
 
@@ -233,7 +238,7 @@ public class ServiceGenerator {
 				+ "return Out.fromMap(result);"
 			);
 
-		File src = new File(FilenameUtils.concat("/tmp/services", GeneratorUtil.packageNameToPath(packageName)), serviceClassName + ".java");
+		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(packageName)), serviceClassName + ".java");
 
 		FileUtils.writeStringToFile(src,  serviceSource.toString());
 
