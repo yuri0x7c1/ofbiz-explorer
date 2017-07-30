@@ -210,11 +210,14 @@ public class OfbizUtil {
 	 */
 	public static List<Field> getPkFields(Entity entity) {
 		List<Field> pkFields = new ArrayList<>();
-		for (Field field : entity.getField()) {
-			if (FieldType.ID_NE.getName().equals(field.getType()) ||
-					FieldType.ID_LONG_NE.getName().equals(field.getType()) ||
-					FieldType.ID_LONG_NE.getName().equals(field.getType())) {
-				pkFields.add(field);
+
+		if (entity != null && entity.getField() != null) {
+			for (Field field : entity.getField()) {
+				if (FieldType.ID_NE.getName().equals(field.getType()) ||
+						FieldType.ID_LONG_NE.getName().equals(field.getType()) ||
+						FieldType.ID_LONG_NE.getName().equals(field.getType())) {
+					pkFields.add(field);
+				}
 			}
 		}
 		return pkFields;
@@ -227,11 +230,13 @@ public class OfbizUtil {
 	 */
 	public static List<Field> getNonpkFields(Entity entity) {
 		List<Field> nonpkFields = new ArrayList<>();
-		for (Field field : entity.getField()) {
-			if (!FieldType.ID_NE.getName().equals(field.getType()) &&
-					!FieldType.ID_LONG_NE.getName().equals(field.getType()) &&
-					!FieldType.ID_LONG_NE.getName().equals(field.getType())) {
-				nonpkFields.add(field);
+		if (entity != null && entity.getField() != null) {
+			for (Field field : entity.getField()) {
+				if (!FieldType.ID_NE.getName().equals(field.getType()) &&
+						!FieldType.ID_LONG_NE.getName().equals(field.getType()) &&
+						!FieldType.ID_LONG_NE.getName().equals(field.getType())) {
+					nonpkFields.add(field);
+				}
 			}
 		}
 		return nonpkFields;
@@ -251,7 +256,7 @@ public class OfbizUtil {
 			return getNonpkFields(entity);
 		}
 		else if (AutoAttributesInclude.ALL.getName().equals(include)) {
-			return entity.getField();
+			return entity != null && entity.getField() != null ? entity.getField() : new ArrayList<>();
 		}
 		return new ArrayList<>();
 	}
