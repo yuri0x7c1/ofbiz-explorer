@@ -38,6 +38,21 @@ public class ServiceGenerator {
 	@Setter
 	private String destinationPath;
 
+	public static String getPackageName(Service service) {
+		return ServiceUtil.locationToPackageName(service.getLocation());
+	}
+
+	public static String getTypeName(Service service) {
+		return StringUtils.capitalize(service.getName()) + "Service";
+	}
+
+	public static String getFullTypeName(Service service) {
+		return getPackageName(service) + "." + getTypeName(service);
+	}
+
+	public static String getVariableName(Service service) {
+		return StringUtils.uncapitalize(getTypeName(service));
+	}
 
 	public String generate() throws Exception {
 		if (service == null ) throw new Exception("Service must not be null");
@@ -45,7 +60,7 @@ public class ServiceGenerator {
 		String packageName = ServiceUtil.locationToPackageName(service.getLocation());
 		log.info("package name {}", packageName);
 
-		String serviceClassName = StringUtils.capitalize(service.getName()) + "Service";
+		String serviceClassName = getTypeName(service);
 		JavaClassSource serviceSource = Roaster.create(JavaClassSource.class)
 			.setName(serviceClassName)
 			.setPackage(packageName);
@@ -99,7 +114,7 @@ public class ServiceGenerator {
 				}
 				FieldSource<JavaClassSource> fieldSource = inTypeSource.addField()
 					.setName(paramName)
-					.setType(ServiceUtil.getParameterType(param))
+					.setType(param.getJavaType())
 					.setPrivate();
 
 				fieldSource.addAnnotation(Getter.class);
@@ -111,7 +126,7 @@ public class ServiceGenerator {
 				// append param to "fromMap()" body
 				fromMapMethodBody.append(String.format("result.set%s(%s map.get(\"%s\"));",
 						StringUtils.capitalize(paramName),
-						"(" + ServiceUtil.getParameterType(param).getSimpleName() + ")",
+						"(" + param.getJavaType().getSimpleName() + ")",
 						paramKey));
 			}
 
@@ -171,7 +186,7 @@ public class ServiceGenerator {
 			for (ServiceParameter param : outParams) {
 				FieldSource<JavaClassSource> fieldSource = outTypeSource.addField()
 					.setName(param.getName())
-					.setType(ServiceUtil.getParameterType(param))
+					.setType(param.getJavaType())
 					.setPrivate();
 
 				fieldSource.addAnnotation(Getter.class);
@@ -183,7 +198,7 @@ public class ServiceGenerator {
 				// append param to "fromMap()" body
 				fromMapMethodBody.append(String.format("result.set%s(%smap.get(\"%s\"));",
 						StringUtils.capitalize(param.getName()),
-						"(" + ServiceUtil.getParameterType(param).getSimpleName() + ")",
+						"(" + param.getJavaType().getSimpleName() + ")",
 						param.getName()));
 			}
 

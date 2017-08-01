@@ -10,6 +10,7 @@ import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
 
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.sidebar.Sections;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
+import com.github.yuri0x7c1.ofbiz.explorer.generator.util.ServiceFormGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.generator.util.ServiceGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
@@ -55,12 +56,19 @@ public class ServiceView extends CommonView implements View {
 
 		serviceGrid.addColumn(entity -> i18n.get("Generate"),
 				new ButtonRenderer<Service>(clickEvent -> {
-					ServiceGenerator generator = new ServiceGenerator();
-					generator.setOfbizInstance(ofbizInstance);
-					generator.setService(clickEvent.getItem());
-					generator.setDestinationPath(env.getProperty("generator.destination_path"));
+					ServiceGenerator serviceGenerator = new ServiceGenerator();
+					serviceGenerator.setOfbizInstance(ofbizInstance);
+					serviceGenerator.setService(clickEvent.getItem());
+					serviceGenerator.setDestinationPath(env.getProperty("generator.destination_path"));
+
+					ServiceFormGenerator serviceFormGenerator = new ServiceFormGenerator();
+					serviceFormGenerator.setOfbizInstance(ofbizInstance);
+					serviceFormGenerator.setService(clickEvent.getItem());
+					serviceFormGenerator.setDestinationPath(env.getProperty("generator.destination_path"));
+
 					try {
-						generator.generate();
+						serviceGenerator.generate();
+						serviceFormGenerator.generate();
 						new Notification(String.format("Service %s generated successfully", clickEvent.getItem().getName()),
 							Notification.Type.HUMANIZED_MESSAGE)
 							.show(Page.getCurrent());

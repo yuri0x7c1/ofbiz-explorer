@@ -92,33 +92,7 @@ public class ServiceUtil {
 		return outParams;
 	}
 
-	public static Class<?> getParameterType(ServiceParameter parameter) {
-		if ("String".equals(parameter.getType())) {
-			return String.class;
-		}
-		else if ("Integer".equals(parameter.getType())) {
-			return Integer.class;
-		}
-		else if ("Long".equals(parameter.getType())) {
-			return Long.class;
-		}
-		else if ("BigDecimal".equals(parameter.getType())) {
-			return BigDecimal.class;
-		}
-		else if ("Boolean".equals(parameter.getType())) {
-			return Boolean.class;
-		}
-		else if ("Timestamp".equals(parameter.getType())) {
-			return Date.class;
-		}
-		else if ("List".equals(parameter.getType())) {
-			return List.class;
-		}
-		else if ("Map".equals(parameter.getType())) {
-			return List.class;
-		}
-		return Object.class;
-	}
+
 
 	public static String locationToPackageName(String location) {
 		final String LOCATION_PACKAGE = "org.apache.ofbiz";
