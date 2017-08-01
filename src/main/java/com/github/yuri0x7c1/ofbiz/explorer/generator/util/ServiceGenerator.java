@@ -21,6 +21,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -88,11 +89,12 @@ public class ServiceGenerator {
 		List<ServiceParameter> outParams = ServiceUtil.getServiceOutParameters(service, ofbizInstance);
 
 		/* process service IN params */
+
+		// crate In nested type
+		JavaClassSource inTypeSource = Roaster.create(JavaClassSource.class).setName("In");
+		inTypeSource.addAnnotation(NoArgsConstructor.class);
+
 		if (!inParams.isEmpty()) {
-
-			// crate In nested type
-			JavaClassSource inTypeSource = Roaster.create(JavaClassSource.class).setName("In");
-
 			// some outer class imports
 			serviceSource.addImport(Map.class);
 			serviceSource.addImport(HashMap.class);
@@ -124,8 +126,8 @@ public class ServiceGenerator {
 				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", paramKey, paramName));
 
 				// append param to "fromMap()" body
-				fromMapMethodBody.append(String.format("result.set%s(%s map.get(\"%s\"));",
-						StringUtils.capitalize(paramName),
+				fromMapMethodBody.append(String.format("%s = %s map.get(\"%s\");",
+						paramName,
 						"(" + param.getJavaType().getSimpleName() + ")",
 						paramKey));
 			}
@@ -146,32 +148,30 @@ public class ServiceGenerator {
 			// add "fromMap()" method to nested "In" type
 			MethodSource<JavaClassSource> fromMapSource = inTypeSource.addMethod()
 				.setName("fromMap")
-				.setReturnType(inTypeSource)
 				.setPublic()
-				.setStatic(true)
 				.setBody(fromMapMethodBody.toString());
 			fromMapSource.addParameter(Map.class, "map");
+
+			// add constructor
+			inTypeSource.addMethod()
+				.setConstructor(true)
+				.setBody("fromMap(map);")
+				.setPublic()
+				.addParameter(Map.class, "map");
 
 			// add In nested type to service class
 			serviceSource.addNestedType(inTypeSource)
 				.setPublic()
 				.setStatic(true);
-
-			// add "in" field
-			FieldSource<JavaClassSource> inFieldSource = serviceSource.addField()
-				.setName("in")
-				.setType(inTypeSource)
-				.setPrivate();
-
-			inFieldSource.addAnnotation(Getter.class);
-			inFieldSource.addAnnotation(Setter.class);
 		}
 
 		/* process service OUT params */
-		if (!outParams.isEmpty()) {
 
-			// crate In nested type
-			JavaClassSource outTypeSource = Roaster.create(JavaClassSource.class).setName("Out");
+		// crate Out nested type
+		JavaClassSource outTypeSource = Roaster.create(JavaClassSource.class).setName("Out");
+		outTypeSource.addAnnotation(NoArgsConstructor.class);
+
+		if (!outParams.isEmpty()) {
 
 			// some outer class imports
 			serviceSource.addImport(Map.class);
@@ -196,8 +196,8 @@ public class ServiceGenerator {
 				toMapMethodBody.append(String.format("map.put(\"%s\", %s);", param.getName(), param.getName()));
 
 				// append param to "fromMap()" body
-				fromMapMethodBody.append(String.format("result.set%s(%smap.get(\"%s\"));",
-						StringUtils.capitalize(param.getName()),
+				fromMapMethodBody.append(String.format("%s = %s map.get(\"%s\");",
+						param.getName(),
 						"(" + param.getJavaType().getSimpleName() + ")",
 						param.getName()));
 			}
@@ -218,25 +218,21 @@ public class ServiceGenerator {
 			// add "fromMap()" method to nested "Out" type
 			MethodSource<JavaClassSource> fromMapSource = outTypeSource.addMethod()
 				.setName("fromMap")
-				.setReturnType(outTypeSource)
 				.setPublic()
-				.setStatic(true)
 				.setBody(fromMapMethodBody.toString());
 			fromMapSource.addParameter(Map.class, "map");
+
+			// add constructor
+			outTypeSource.addMethod()
+				.setConstructor(true)
+				.setBody("fromMap(map);")
+				.setPublic()
+				.addParameter(Map.class, "map");
 
 			// add Out nested type to service class
 			serviceSource.addNestedType(outTypeSource)
 				.setPublic()
 				.setStatic(true);
-
-			// add "out" field
-			FieldSource<JavaClassSource> inFieldSource = serviceSource.addField()
-				.setName("out")
-				.setType(outTypeSource)
-				.setPrivate();
-
-			inFieldSource.addAnnotation(Getter.class);
-			inFieldSource.addAnnotation(Setter.class);
 		}
 
 		/* add "runSync()" method */
@@ -250,8 +246,10 @@ public class ServiceGenerator {
 				+ "catch (Exception e) {"
 				+ "	log.error(\"Error\", e);"
 				+ "}"
-				+ "return Out.fromMap(result);"
-			);
+				+ "return new Out(result);"
+			)
+			.setReturnType(outTypeSource)
+			.addParameter(inTypeSource, "in");
 
 		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(packageName)), serviceClassName + ".java");
 
