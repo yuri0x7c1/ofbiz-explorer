@@ -70,7 +70,9 @@ public class ServiceView extends CommonView implements View {
 					try {
 						serviceGenerator.generate(service);
 						serviceFormGenerator.generate(service);
-						new Notification(String.format("Service %s generated successfully", service.getName()),
+						String msg = String.format("Service %s generated successfully to %s", service.getName(), env.getProperty("generator.destination_path"));
+						log.info(msg);
+						new Notification(msg,
 							Notification.Type.HUMANIZED_MESSAGE)
 							.show(Page.getCurrent());
 					}

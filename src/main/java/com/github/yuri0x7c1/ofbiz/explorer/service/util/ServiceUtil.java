@@ -21,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class ServiceUtil {
 
+	public static final String LOCATION_PACKAGE = "org.apache.ofbiz";
+	public static final String LOCATION_COMPONENT = "component://";
+
 	@Autowired
 	private Environment env;
 
@@ -105,19 +108,17 @@ public class ServiceUtil {
 
 
 	public String locationToPackageName(String location) {
-		final String LOCATION_PACKAGE = "org.apache.ofbiz";
-		final String LOCATION_COMPONENT = "component://";
-
 		String basePackage = env.getProperty("generator.base_package");
+		String servicePackage = basePackage;
 
 		if (location != null) {
 			if (location.startsWith(LOCATION_PACKAGE)) {
-				basePackage = location.substring(0, location.lastIndexOf('.'));
+				servicePackage = basePackage + location.substring(LOCATION_PACKAGE.length(), location.lastIndexOf('.'));
 			}
 			else if (location.startsWith(LOCATION_COMPONENT)) {
-				basePackage = basePackage + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
+				servicePackage = basePackage + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
 			}
 		}
-		return basePackage;
+		return servicePackage;
 	}
 }
