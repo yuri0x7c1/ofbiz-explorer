@@ -1,6 +1,5 @@
 package com.github.yuri0x7c1.ofbiz.explorer.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 

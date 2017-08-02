@@ -12,6 +12,7 @@ import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -26,45 +27,48 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class ServiceGenerator {
-	@Getter
-	@Setter
+	@Autowired
 	private OfbizInstance ofbizInstance;
 
-	@Getter
-	@Setter
-	private Service service;
+	@Autowired
+	private Environment env;
 
-	@Getter
-	@Setter
-	private String destinationPath;
+	@Autowired
+	private ServiceUtil serviceUtil;
 
-	public static String getPackageName(Service service) {
-		return ServiceUtil.locationToPackageName(service.getLocation());
+	public String getPackageName(Service service) {
+		return serviceUtil.locationToPackageName(service.getLocation());
 	}
 
-	public static String getTypeName(Service service) {
+	public String getTypeName(Service service) {
 		return StringUtils.capitalize(service.getName()) + "Service";
 	}
 
-	public static String getFullTypeName(Service service) {
+	public String getFullTypeName(Service service) {
 		return getPackageName(service) + "." + getTypeName(service);
 	}
 
-	public static String getVariableName(Service service) {
+	public String getVariableName(Service service) {
 		return StringUtils.uncapitalize(getTypeName(service));
 	}
 
-	public String generate() throws Exception {
+	public String generate(Service service) throws Exception {
 		if (service == null ) throw new Exception("Service must not be null");
 
-		String packageName = ServiceUtil.locationToPackageName(service.getLocation());
+		String packageName = serviceUtil.locationToPackageName(service.getLocation());
 		log.info("package name {}", packageName);
 
 		String serviceClassName = getTypeName(service);
 		JavaClassSource serviceSource = Roaster.create(JavaClassSource.class)
 			.setName(serviceClassName)
 			.setPackage(packageName);
+
+		// some imports
+		serviceSource.addImport(Getter.class);
+		serviceSource.addImport(Setter.class);
+		serviceSource.addImport(NoArgsConstructor.class);
 
 		serviceSource.addAnnotation(Component.class);
 		serviceSource.addAnnotation(Slf4j.class);
@@ -85,8 +89,8 @@ public class ServiceGenerator {
 			.setPrivate()
 			.addAnnotation(Autowired.class);
 
-		List<ServiceParameter> inParams = ServiceUtil.getServiceInParameters(service, ofbizInstance);
-		List<ServiceParameter> outParams = ServiceUtil.getServiceOutParameters(service, ofbizInstance);
+		List<ServiceParameter> inParams = serviceUtil.getServiceInParameters(service);
+		List<ServiceParameter> outParams = serviceUtil.getServiceOutParameters(service);
 
 		/* process service IN params */
 
@@ -141,9 +145,6 @@ public class ServiceGenerator {
 				.setReturnType(Map.class)
 				.setPublic()
 				.setBody(toMapMethodBody.toString());
-
-			// add "fromMap() method return value
-			fromMapMethodBody.append("return result;");
 
 			// add "fromMap()" method to nested "In" type
 			MethodSource<JavaClassSource> fromMapSource = inTypeSource.addMethod()
@@ -212,9 +213,6 @@ public class ServiceGenerator {
 				.setPublic()
 				.setBody(toMapMethodBody.toString());
 
-			// add "fromMap() method return value
-			fromMapMethodBody.append("return result;");
-
 			// add "fromMap()" method to nested "Out" type
 			MethodSource<JavaClassSource> fromMapSource = outTypeSource.addMethod()
 				.setName("fromMap")
@@ -250,6 +248,8 @@ public class ServiceGenerator {
 			)
 			.setReturnType(outTypeSource)
 			.addParameter(inTypeSource, "in");
+
+		String destinationPath = env.getProperty("generator.destination_path");
 
 		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(packageName)), serviceClassName + ".java");
 

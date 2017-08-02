@@ -1,9 +1,11 @@
 package com.github.yuri0x7c1.ofbiz.explorer.service.util;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
@@ -16,8 +18,16 @@ import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizUtil;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class ServiceUtil {
-	public static  List<ServiceParameter> getServiceParameters(Service service, OfbizInstance ofbizInstance) {
+
+	@Autowired
+	private Environment env;
+
+	@Autowired
+	private OfbizInstance ofbizInstance;
+
+	public  List<ServiceParameter> getServiceParameters(Service service) {
 		List<ServiceParameter> serviceParams = new ArrayList<>();
 		for (Object attr : service.getAutoAttributesOrAttribute()) {
 			if (attr instanceof Attribute) {
@@ -70,8 +80,8 @@ public class ServiceUtil {
 	public static final String SERVICE_PARAMETER_MODE_OUT = "OUT";
 	public static final String SERVICE_PARAMETER_MODE_INOUT = "INOUT";
 
-	public static List<ServiceParameter> getServiceInParameters(Service service, OfbizInstance ofbizInstance) {
-		List<ServiceParameter> allParams = getServiceParameters(service, ofbizInstance);
+	public List<ServiceParameter> getServiceInParameters(Service service) {
+		List<ServiceParameter> allParams = getServiceParameters(service);
 		List<ServiceParameter> inParams = new ArrayList<>();
 		for (ServiceParameter param : allParams) {
 			if (param.getMode().equals(SERVICE_PARAMETER_MODE_IN) || param.getMode().equals(SERVICE_PARAMETER_MODE_INOUT)) {
@@ -81,8 +91,8 @@ public class ServiceUtil {
 		return inParams;
 	}
 
-	public static List<ServiceParameter> getServiceOutParameters(Service service, OfbizInstance ofbizInstance) {
-		List<ServiceParameter> allParams = getServiceParameters(service, ofbizInstance);
+	public List<ServiceParameter> getServiceOutParameters(Service service) {
+		List<ServiceParameter> allParams = getServiceParameters(service);
 		List<ServiceParameter> outParams = new ArrayList<>();
 		for (ServiceParameter param : allParams) {
 			if (param.getMode().equals(SERVICE_PARAMETER_MODE_OUT) || param.getMode().equals(SERVICE_PARAMETER_MODE_OUT)) {
@@ -94,20 +104,20 @@ public class ServiceUtil {
 
 
 
-	public static String locationToPackageName(String location) {
+	public String locationToPackageName(String location) {
 		final String LOCATION_PACKAGE = "org.apache.ofbiz";
 		final String LOCATION_COMPONENT = "component://";
 
-		String packageName = "org.apache.ofbiz";
+		String basePackage = env.getProperty("generator.base_package");
 
 		if (location != null) {
 			if (location.startsWith(LOCATION_PACKAGE)) {
-				packageName = location.substring(0, location.lastIndexOf('.'));
+				basePackage = location.substring(0, location.lastIndexOf('.'));
 			}
 			else if (location.startsWith(LOCATION_COMPONENT)) {
-				packageName = packageName + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
+				basePackage = basePackage + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
 			}
 		}
-		return packageName;
+		return basePackage;
 	}
 }

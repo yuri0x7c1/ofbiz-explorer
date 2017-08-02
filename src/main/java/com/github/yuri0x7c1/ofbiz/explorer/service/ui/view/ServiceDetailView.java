@@ -1,6 +1,5 @@
 package com.github.yuri0x7c1.ofbiz.explorer.service.ui.view;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -11,15 +10,10 @@ import org.vaadin.viritin.button.MButton;
 
 import com.github.yuri0x7c1.ofbiz.explorer.common.navigation.util.NavigationUtil;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
-import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
-import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceParameter;
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceUtil;
-import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
-import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributes;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
-import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizUtil;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
@@ -42,6 +36,9 @@ public class ServiceDetailView extends CommonView implements View {
 
 	@Autowired
 	private OfbizInstance ofbizInstance;
+
+	@Autowired
+	private ServiceUtil serviceUtil;
 
 	private Grid<ServiceParameter> parametersGrid;
 
@@ -77,7 +74,7 @@ public class ServiceDetailView extends CommonView implements View {
 		Service service = ofbizInstance.getAllServices().get(serviceName);
 
 		// TODO: move to separate method
-		List<ServiceParameter> serviceParams = ServiceUtil.getServiceParameters(service, ofbizInstance);
+		List<ServiceParameter> serviceParams = serviceUtil.getServiceParameters(service);
 		parametersGrid.setItems(serviceParams);
 
 		setHeaderText(serviceName);

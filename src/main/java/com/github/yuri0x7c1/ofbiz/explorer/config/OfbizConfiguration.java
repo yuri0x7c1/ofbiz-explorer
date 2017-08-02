@@ -10,8 +10,11 @@ import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizUtil;
 @Configuration
 public class OfbizConfiguration {
 
-	@Value("${generator.destination_path}")
+	@Value("${generator.destination_path ?: '/tmp/ofbiz/'}")
 	public String destinationPath;
+
+	@Value("${generator.base_package ?: 'org.apache.ofbiz'}")
+	public String basePackage;
 
 	@Bean
 	public OfbizInstance ofbizInstance() {

@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.core.env.Environment;
 
-import com.github.yuri0x7c1.ofbiz.explorer.generator.util.ServiceGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.extern.slf4j.Slf4j;

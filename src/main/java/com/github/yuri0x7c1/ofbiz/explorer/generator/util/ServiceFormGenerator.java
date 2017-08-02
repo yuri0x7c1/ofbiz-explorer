@@ -12,6 +12,9 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceParameter;
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceUtil;
@@ -27,42 +30,41 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class ServiceFormGenerator {
 
 	public static final String SUBPACKAGE_NAME = "ui.form";
 	public static final String TYPE_NAME_PART = "ServiceForm";
 	public static final String FIELD_VARIABLE_PART = "Field";
 
-
-	@Getter
-	@Setter
+	@Autowired
 	private OfbizInstance ofbizInstance;
 
-	@Getter
-	@Setter
-	private Service service;
+	@Autowired
+	private ServiceUtil serviceUtil;
 
-	@Getter
-	@Setter
-	private String destinationPath;
+	@Autowired
+	private ServiceGenerator serviceGenerator;
 
-	public static String getPackageName(Service service) {
-		return ServiceUtil.locationToPackageName(service.getLocation()) + "." + SUBPACKAGE_NAME;
+	@Autowired
+	private Environment env;
+
+	public String getPackageName(Service service) {
+		return serviceUtil.locationToPackageName(service.getLocation()) + "." + SUBPACKAGE_NAME;
 	}
 
-	public static String getTypeSimpleName(Service service) {
+	public String getTypeSimpleName(Service service) {
 		return StringUtils.capitalize(service.getName()) + TYPE_NAME_PART;
 	}
 
-	public static String getTypeName(Service service) {
+	public String getTypeName(Service service) {
 		return getPackageName(service) + "." + getTypeSimpleName(service);
 	}
 
-	public static String getVariableName(Service service) {
+	public String getVariableName(Service service) {
 		return StringUtils.uncapitalize(getTypeSimpleName(service));
 	}
 
@@ -70,7 +72,7 @@ public class ServiceFormGenerator {
 		return param.getName() + FIELD_VARIABLE_PART;
 	}
 
-	public String generate() throws Exception {
+	public String generate(Service service) throws Exception {
 		if (service == null ) throw new Exception("Service must not be null");
 
 		String packageName = getPackageName(service);
@@ -89,7 +91,7 @@ public class ServiceFormGenerator {
 		// add bean field
 		serviceFormSource.addField()
 			.setName("bean")
-			.setType(ServiceGenerator.getFullTypeName(service) + ".In")
+			.setType(serviceGenerator.getFullTypeName(service) + ".In")
 			.setPrivate()
 			.addAnnotation(Getter.class);
 
@@ -97,18 +99,18 @@ public class ServiceFormGenerator {
 		serviceFormSource.addMethod()
 			.setName("setBean")
 			.setPublic()
-			.setBody("this.bean = bean; binder.bind(bean);")
-			.addParameter(ServiceGenerator.getTypeName(service) + ".In", "bean");
+			.setBody("this.bean = bean; binder.setBean(bean);")
+			.addParameter(serviceGenerator.getTypeName(service) + ".In", "bean");
 
 		// add binder field
 		serviceFormSource.addField()
 			.setName("binder")
-			.setType(Binder.class.getName() + "<" + ServiceGenerator.getTypeName(service) + ".In>")
+			.setType(Binder.class.getName() + "<" + serviceGenerator.getTypeName(service) + ".In>")
 			.setLiteralInitializer("new " + Binder.class.getSimpleName() + "<>();")
 			.setPrivate();
 
 		// get service params list
-		List<ServiceParameter> inParams = ServiceUtil.getServiceInParameters(service, ofbizInstance);
+		List<ServiceParameter> inParams = serviceUtil.getServiceInParameters(service);
 
 		StringBuilder bindFieldsSource = new StringBuilder();
 		StringBuilder addComponentsSource = new StringBuilder();
@@ -138,9 +140,9 @@ public class ServiceFormGenerator {
 
 				// bind fields source
 				bindFieldsSource.append(String.format("binder.forField(%s).bind(%s.In::%s, %s.In::%s);",
-						param.getName(),
-						ServiceGenerator.getTypeName(service), param.getterName(),
-						ServiceGenerator.getTypeName(service), param.setterName()));
+						getFieldVariableName(param),
+						serviceGenerator.getTypeName(service), param.getterName(),
+						serviceGenerator.getTypeName(service), param.setterName()));
 
 				// add components source
 				addComponentsSource.append("addComponent(" + getFieldVariableName(param) + ");");
@@ -152,7 +154,7 @@ public class ServiceFormGenerator {
 			.setName("runButton")
 			.setType(Button.class)
 			.setPrivate()
-			.setLiteralInitializer("new Buttion(\"Run\");")
+			.setLiteralInitializer("new Button(\"Run\");")
 			.addAnnotation(Getter.class);
 
 		// init method source
@@ -164,6 +166,11 @@ public class ServiceFormGenerator {
 						+ "addComponent(runButton);");
 		initMethodSource.addAnnotation(PostConstruct.class);
 
+		// imports hack
+		serviceFormSource.removeImport(serviceGenerator.getTypeName(service) + ".In");
+		serviceFormSource.addImport(serviceGenerator.getFullTypeName(service));
+
+		String destinationPath = env.getProperty("generator.destination_path");
 
 		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(packageName)), serviceFormClassName + ".java");
 

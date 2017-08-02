@@ -41,6 +41,12 @@ public class ServiceView extends CommonView implements View {
 
 	private Grid<Service> serviceGrid = new Grid<>();
 
+	@Autowired
+	ServiceGenerator serviceGenerator;
+
+	@Autowired
+	ServiceFormGenerator serviceFormGenerator;
+
 	@PostConstruct
 	public void init() {
 		setHeaderText(i18n.get("Services"));
@@ -56,26 +62,21 @@ public class ServiceView extends CommonView implements View {
 
 		serviceGrid.addColumn(entity -> i18n.get("Generate"),
 				new ButtonRenderer<Service>(clickEvent -> {
-					ServiceGenerator serviceGenerator = new ServiceGenerator();
-					serviceGenerator.setOfbizInstance(ofbizInstance);
-					serviceGenerator.setService(clickEvent.getItem());
-					serviceGenerator.setDestinationPath(env.getProperty("generator.destination_path"));
 
-					ServiceFormGenerator serviceFormGenerator = new ServiceFormGenerator();
-					serviceFormGenerator.setOfbizInstance(ofbizInstance);
-					serviceFormGenerator.setService(clickEvent.getItem());
-					serviceFormGenerator.setDestinationPath(env.getProperty("generator.destination_path"));
+					Service service = clickEvent.getItem();
+					log.debug("Service name : {}", service.getName());
+
 
 					try {
-						serviceGenerator.generate();
-						serviceFormGenerator.generate();
-						new Notification(String.format("Service %s generated successfully", clickEvent.getItem().getName()),
+						serviceGenerator.generate(service);
+						serviceFormGenerator.generate(service);
+						new Notification(String.format("Service %s generated successfully", service.getName()),
 							Notification.Type.HUMANIZED_MESSAGE)
 							.show(Page.getCurrent());
 					}
 					catch (Exception e) {
-						String msg = String.format("Generate service % failed", clickEvent.getItem().getName());
-						log.error(msg);
+						String msg = String.format("Generate service % failed", service.getName());
+						log.error(msg, e);
 						new Notification(msg,
 						    Notification.Type.ERROR_MESSAGE)
 						    .show(Page.getCurrent());
