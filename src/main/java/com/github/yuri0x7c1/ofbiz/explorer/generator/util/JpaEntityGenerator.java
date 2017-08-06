@@ -45,12 +45,28 @@ public class JpaEntityGenerator {
 	@Autowired
 	private Environment env;
 
-	private AnnotationSource<JavaClassSource>  setJoinColumnValue(AnnotationSource<JavaClassSource> annotationSource, KeyMap relKeyMap) {
+	private boolean isJoinColumnModifiable(Entity entity, List<KeyMap> relKeyMaps) {
+		for (KeyMap relKeyMap : relKeyMaps) {
+			if (entity.getPrimaryKeyNames().contains(relKeyMap.getFieldName())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private AnnotationSource<JavaClassSource>  setJoinColumnValue(AnnotationSource<JavaClassSource> annotationSource, KeyMap relKeyMap, boolean modifiable) {
 		String joinColumnName = GeneratorUtil.underscoredFromCamelCaseUpper(relKeyMap.getFieldName());
 		String joinColumnReferencedName = joinColumnName;
 		if (relKeyMap.getRelFieldName() != null) joinColumnReferencedName = GeneratorUtil.underscoredFromCamelCaseUpper(relKeyMap.getRelFieldName());
 		annotationSource.setLiteralValue("name", "\"" + joinColumnName + "\"");
 		annotationSource.setLiteralValue("referencedColumnName", "\"" + joinColumnReferencedName + "\"");
+
+		if (!modifiable) {
+			annotationSource.setLiteralValue("nullable", Boolean.FALSE.toString());
+			annotationSource.setLiteralValue("insertable", Boolean.FALSE.toString());
+			annotationSource.setLiteralValue("updatable", Boolean.FALSE.toString());
+		}
+
 		return annotationSource;
 	}
 
@@ -158,13 +174,14 @@ public class JpaEntityGenerator {
 				relationFieldSource.addAnnotation(ManyToMany.class);
 			}
 
+			boolean relModifiable = isJoinColumnModifiable(entity, relation.getKeyMap());
 			if (relation.getKeyMap().size() == 1) {
-				setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0));
+				setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0), relModifiable);
 			}
 			else if (relation.getKeyMap().size() > 1) {
 				AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
 				for (KeyMap relKeyMap : relation.getKeyMap()) {
-					setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap);
+					setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap, relModifiable);
 				}
 
 			}
