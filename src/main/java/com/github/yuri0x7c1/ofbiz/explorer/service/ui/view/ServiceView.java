@@ -77,7 +77,7 @@ public class ServiceView extends CommonView implements View {
 							.show(Page.getCurrent());
 					}
 					catch (Exception e) {
-						String msg = String.format("Generate service % failed", service.getName());
+						String msg = String.format("Generate service %s failed", service.getName());
 						log.error(msg, e);
 						new Notification(msg,
 						    Notification.Type.ERROR_MESSAGE)
