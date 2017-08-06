@@ -2,6 +2,7 @@ package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -18,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,7 @@ import org.springframework.util.StringUtils;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.KeyMap;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
@@ -41,6 +45,14 @@ public class JpaEntityGenerator {
 	@Autowired
 	private Environment env;
 
+	private AnnotationSource<JavaClassSource>  setJoninColumnValue(AnnotationSource<JavaClassSource> annotationSource, KeyMap relKeyMap) {
+		String joinColumnName = GeneratorUtil.underscoredFromCamelCaseUpper(relKeyMap.getFieldName());
+		String joinColumnReferencedName = joinColumnName;
+		if (relKeyMap.getRelFieldName() != null) joinColumnReferencedName = GeneratorUtil.underscoredFromCamelCaseUpper(relKeyMap.getRelFieldName());
+		annotationSource.setLiteralValue("name", "\"" + joinColumnName + "\"");
+		annotationSource.setLiteralValue("referencedColumnName", "\"" + joinColumnReferencedName + "\"");
+		return annotationSource;
+	}
 
 	public String generate(Entity entity) throws Exception {
 		// create entity class
@@ -131,23 +143,30 @@ public class JpaEntityGenerator {
 		// create relations
 		for (Relation relation : entity.getRelation()) {
 			Entity relationEntity = ofbizInstance.getAllEntities().get(relation.getRelEntityName());
-			FieldSource<JavaClassSource> relationSource = jpaEntityClass.addField()
+			FieldSource<JavaClassSource> relationFieldSource = jpaEntityClass.addField()
 				.setName(StringUtils.uncapitalize(relationEntity.getEntityName()))
 				.setType(relationEntity.getPackageName() + "." + relationEntity.getEntityName())
 				.setPrivate();
 
-			relationSource.addAnnotation(Getter.class);
-			relationSource.addAnnotation(Setter.class);
+			relationFieldSource.addAnnotation(Getter.class);
+			relationFieldSource.addAnnotation(Setter.class);
 
 			if (Relation.TYPE_ONE.equals(relation.getType())) {
-				relationSource.addAnnotation(ManyToOne.class);
+				relationFieldSource.addAnnotation(ManyToOne.class);
 			}
 			else if (Relation.TYPE_MANY.equals(relation.getType())) {
-				relationSource.addAnnotation(ManyToMany.class);
+				relationFieldSource.addAnnotation(ManyToMany.class);
 			}
 
 			if (relation.getKeyMap().size() == 1) {
-				relationSource.addAnnotation(JoinColumn.class);
+				setJoninColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0));
+			}
+			else if (relation.getKeyMap().size() > 1) {
+				AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
+				for (KeyMap relKeyMap : relation.getKeyMap()) {
+					setJoninColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap);
+				}
+
 			}
 		}
 
