@@ -131,7 +131,7 @@ public class JpaEntityGenerator {
 
 			}
 			// add id class
-			jpaEntityClass.addNestedType(jpaEntityIdClass).setPublic().setStatic(true).setFinal(true);
+			jpaEntityClass.addNestedType(jpaEntityIdClass).setPublic().setStatic(true);
 
 			// add id field
 			FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField().setName("id").setType(jpaEntityIdClass).setPrivate();
