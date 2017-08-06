@@ -153,7 +153,7 @@ public class JpaEntityGenerator {
 
 		String destinationPath = env.getProperty("generator.destination_path");
 
-		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(entity.getPackageName())), jpaEntityClass + ".java");
+		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(entity.getPackageName())), entity.getEntityName() + ".java");
 
 		FileUtils.writeStringToFile(src,  jpaEntityClass.toString());
 
