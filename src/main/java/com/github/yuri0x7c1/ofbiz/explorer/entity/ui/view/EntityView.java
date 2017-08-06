@@ -12,13 +12,13 @@ import com.github.yuri0x7c1.ofbiz.explorer.common.ui.sidebar.Sections;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.generator.util.JpaEntityGenerator;
-import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Page;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.renderers.ButtonRenderer;
@@ -44,20 +44,40 @@ public class EntityView extends CommonView implements View {
 
 	private Grid<Entity> entityGrid = new Grid<>();
 
+	private Button generateAllButton = new Button("Generate all");
+
 	@PostConstruct
 	public void init() {
 		setHeaderText(i18n.get("Entities"));
 
+		// gnerate all button
+		generateAllButton.addClickListener(event -> {
+			log.info("Generating all entities");
+			for (Entity entity : ofbizInstance.getAllEntities().values()) {
+				try {
+					jpaEntityGenerator.generate(entity);
+					String msg = String.format("Entity %s generated successfully to %s", entity.getEntityName(), env.getProperty("generator.destination_path"));
+					log.info(msg);
+				}
+				catch (Exception e) {
+					String msg = String.format("Generate entity %s failed", entity.getEntityName());
+					log.error(msg, e);
+				}
+			}
+		});
+		addHeaderComponent(generateAllButton);
+
+		// entity grid
 		entityGrid.setItems(ofbizInstance.getAllEntities().values());
 		entityGrid.setWidth("100%");
 		entityGrid.addColumn(Entity::getEntityName).setCaption(i18n.get("Entity.name"));
 		entityGrid.addColumn(Entity::getDescription).setCaption(i18n.get("Description"));
-		entityGrid.addColumn(entity -> i18n.get("View"),
+		entityGrid.addColumn(entity -> i18n.get("View"), // view entity button
 				new ButtonRenderer<Entity>(clickEvent -> {
 					getUI().getNavigator().navigateTo(EntityDetailView.NAME + "/" + clickEvent.getItem().getEntityName());
 			    }));
 
-		entityGrid.addColumn(entity -> i18n.get("Generate"),
+		entityGrid.addColumn(entity -> i18n.get("Generate"), // generate entity button
 				new ButtonRenderer<Entity>(clickEvent -> {
 
 					Entity entity = clickEvent.getItem();
