@@ -45,7 +45,7 @@ public class JpaEntityGenerator {
 	@Autowired
 	private Environment env;
 
-	private AnnotationSource<JavaClassSource>  setJoninColumnValue(AnnotationSource<JavaClassSource> annotationSource, KeyMap relKeyMap) {
+	private AnnotationSource<JavaClassSource>  setJoinColumnValue(AnnotationSource<JavaClassSource> annotationSource, KeyMap relKeyMap) {
 		String joinColumnName = GeneratorUtil.underscoredFromCamelCaseUpper(relKeyMap.getFieldName());
 		String joinColumnReferencedName = joinColumnName;
 		if (relKeyMap.getRelFieldName() != null) joinColumnReferencedName = GeneratorUtil.underscoredFromCamelCaseUpper(relKeyMap.getRelFieldName());
@@ -159,12 +159,12 @@ public class JpaEntityGenerator {
 			}
 
 			if (relation.getKeyMap().size() == 1) {
-				setJoninColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0));
+				setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0));
 			}
 			else if (relation.getKeyMap().size() > 1) {
 				AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
 				for (KeyMap relKeyMap : relation.getKeyMap()) {
-					setJoninColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap);
+					setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap);
 				}
 
 			}
