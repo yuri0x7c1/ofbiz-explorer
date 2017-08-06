@@ -117,7 +117,7 @@ public class ServiceFormGenerator {
 
 		// process fields
 		for (ServiceParameter param : inParams) {
-			if (!param.isOptional()) {
+			if (!param.isSetInternally()) {
 				// form field definition
 				FieldSource<JavaClassSource> formFieldSource = 	serviceFormSource.addField()
 						.setName(getFieldVariableName(param))
