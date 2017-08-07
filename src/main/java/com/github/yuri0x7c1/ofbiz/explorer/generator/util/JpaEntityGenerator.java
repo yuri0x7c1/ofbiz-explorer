@@ -2,7 +2,6 @@ package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +18,7 @@ import javax.persistence.Table;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -26,7 +26,6 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
@@ -36,7 +35,9 @@ import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JpaEntityGenerator {
 	@Autowired
@@ -70,10 +71,27 @@ public class JpaEntityGenerator {
 		return annotationSource;
 	}
 
+	public String getRelationFieldName(Relation relation) {
+		StringBuilder name = new StringBuilder();
+		if (!StringUtils.isBlank(relation.getTitle())) {
+			name.append(relation.getTitle())
+				.append(relation.getRelEntityName());
+		}
+		else {
+			name.append(relation.getRelEntityName());
+		}
+		return StringUtils.uncapitalize(name.toString());
+	}
+
+	public String getPackageName(Entity entity) {
+		return entity.getPackageName().replace("return", "_return");
+	}
+
 	public String generate(Entity entity) throws Exception {
+		log.info("Generate entity: {}", entity.getEntityName());
 		// create entity class
 		final JavaClassSource jpaEntityClass = Roaster.create(JavaClassSource.class);
-		jpaEntityClass.setPackage(entity.getPackageName())
+		jpaEntityClass.setPackage(getPackageName(entity))
 			.setName(entity.getEntityName());
 
 		// add entity annotations
@@ -158,38 +176,44 @@ public class JpaEntityGenerator {
 
 		// create relations
 		for (Relation relation : entity.getRelation()) {
+			log.info("\tGenerate relation field for entity {}", relation.getRelEntityName());
 			Entity relationEntity = ofbizInstance.getAllEntities().get(relation.getRelEntityName());
-			FieldSource<JavaClassSource> relationFieldSource = jpaEntityClass.addField()
-				.setName(StringUtils.uncapitalize(relationEntity.getEntityName()))
-				.setType(relationEntity.getPackageName() + "." + relationEntity.getEntityName())
-				.setPrivate();
-
-			relationFieldSource.addAnnotation(Getter.class);
-			relationFieldSource.addAnnotation(Setter.class);
-
-			if (Relation.TYPE_ONE.equals(relation.getType())) {
-				relationFieldSource.addAnnotation(ManyToOne.class);
+			if (relationEntity == null) {
+				log.error("\tError get relation object for entity {}. Skipping relation.", relation.getRelEntityName());
 			}
-			else if (Relation.TYPE_MANY.equals(relation.getType())) {
-				relationFieldSource.addAnnotation(ManyToMany.class);
-			}
+			else {
+				FieldSource<JavaClassSource> relationFieldSource = jpaEntityClass.addField()
+					.setName(getRelationFieldName(relation))
+					.setType(getPackageName(relationEntity) + "." + relationEntity.getEntityName())
+					.setPrivate();
 
-			boolean relModifiable = isJoinColumnModifiable(entity, relation.getKeyMap());
-			if (relation.getKeyMap().size() == 1) {
-				setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0), relModifiable);
-			}
-			else if (relation.getKeyMap().size() > 1) {
-				AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
-				for (KeyMap relKeyMap : relation.getKeyMap()) {
-					setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap, relModifiable);
+				relationFieldSource.addAnnotation(Getter.class);
+				relationFieldSource.addAnnotation(Setter.class);
+
+				if (Relation.TYPE_ONE.equals(relation.getType())) {
+					relationFieldSource.addAnnotation(ManyToOne.class);
+				}
+				else if (Relation.TYPE_MANY.equals(relation.getType())) {
+					relationFieldSource.addAnnotation(ManyToMany.class);
 				}
 
+				boolean relModifiable = isJoinColumnModifiable(entity, relation.getKeyMap());
+				if (relation.getKeyMap().size() == 1) {
+					setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0), relModifiable);
+				}
+				else if (relation.getKeyMap().size() > 1) {
+					AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
+					for (KeyMap relKeyMap : relation.getKeyMap()) {
+						setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap, relModifiable);
+					}
+
+				}
 			}
 		}
 
 		String destinationPath = env.getProperty("generator.destination_path");
 
-		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(entity.getPackageName())), entity.getEntityName() + ".java");
+		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(getPackageName(entity))), entity.getEntityName() + ".java");
 
 		FileUtils.writeStringToFile(src,  jpaEntityClass.toString());
 

@@ -1,5 +1,8 @@
 package com.github.yuri0x7c1.ofbiz.explorer.entity.ui.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.themes.ValoTheme;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,8 +54,10 @@ public class EntityView extends CommonView implements View {
 	public void init() {
 		setHeaderText(i18n.get("Entities"));
 
-		// gnerate all button
+		// generate all button
+		generateAllButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		generateAllButton.addClickListener(event -> {
+			List<String> errorEntities = new ArrayList<>();
 			log.info("Generating all entities");
 			for (Entity entity : ofbizInstance.getAllEntities().values()) {
 				try {
@@ -60,9 +66,21 @@ public class EntityView extends CommonView implements View {
 					log.info(msg);
 				}
 				catch (Exception e) {
+					errorEntities.add(entity.getEntityName());
 					String msg = String.format("Generate entity %s failed", entity.getEntityName());
 					log.error(msg, e);
 				}
+			}
+
+			if (errorEntities.isEmpty()) {
+				new Notification("Entities generated!",
+						Notification.Type.HUMANIZED_MESSAGE)
+						.show(Page.getCurrent());
+			}
+			else {
+				new Notification("Entities generated with problems in:" + String.join(", ", errorEntities),
+						Notification.Type.WARNING_MESSAGE)
+						.show(Page.getCurrent());
 			}
 		});
 		addHeaderComponent(generateAllButton);
