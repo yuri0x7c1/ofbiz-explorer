@@ -11,8 +11,8 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.apache.commons.io.FileUtils;
@@ -208,10 +208,10 @@ public class JpaEntityGenerator {
 				// relationFieldSource.addAnnotation(Setter.class);
 
 				if (Relation.TYPE_ONE.equals(relation.getType())) {
-					relationFieldSource.addAnnotation(ManyToOne.class);
+					relationFieldSource.addAnnotation(OneToOne.class);
 				}
 				else if (Relation.TYPE_MANY.equals(relation.getType())) {
-					relationFieldSource.addAnnotation(ManyToMany.class);
+					relationFieldSource.addAnnotation(OneToMany.class);
 				}
 
 				boolean relModifiable = isJoinColumnModifiable(entity, relation.getKeyMap());
