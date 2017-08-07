@@ -47,12 +47,7 @@ public class JpaEntityGenerator {
 	private Environment env;
 
 	private boolean isJoinColumnModifiable(Entity entity, List<KeyMap> relKeyMaps) {
-		for (KeyMap relKeyMap : relKeyMaps) {
-			if (entity.getPrimaryKeyNames().contains(relKeyMap.getFieldName())) {
-				return false;
-			}
-		}
-		return true;
+		return false;
 	}
 
 	private AnnotationSource<JavaClassSource>  setJoinColumnValue(AnnotationSource<JavaClassSource> annotationSource, KeyMap relKeyMap, boolean modifiable) {
@@ -63,7 +58,7 @@ public class JpaEntityGenerator {
 		annotationSource.setLiteralValue("referencedColumnName", "\"" + joinColumnReferencedName + "\"");
 
 		if (!modifiable) {
-			annotationSource.setLiteralValue("nullable", Boolean.FALSE.toString());
+			// annotationSource.setLiteralValue("nullable", Boolean.FALSE.toString());
 			annotationSource.setLiteralValue("insertable", Boolean.FALSE.toString());
 			annotationSource.setLiteralValue("updatable", Boolean.FALSE.toString());
 		}
@@ -80,11 +75,19 @@ public class JpaEntityGenerator {
 		else {
 			name.append(relation.getRelEntityName());
 		}
+
+		name.setCharAt(0, Character.toLowerCase(name.charAt(0)));
+		if (relation.getKeyMap().size() == 1) {
+			if (name.toString().equals(relation.getKeyMap().get(0).getFieldName())) {
+				name.append("Relation");
+			}
+		}
+
 		return StringUtils.uncapitalize(name.toString());
 	}
 
 	public String getPackageName(Entity entity) {
-		return entity.getPackageName().replace("return", "_return");
+		return entity.getPackageName().replace("return", "_return").replace("enum", "_enum");
 	}
 
 	public String generate(Entity entity) throws Exception {
@@ -135,19 +138,32 @@ public class JpaEntityGenerator {
 
 			// add annotation
 			jpaEntityIdClass.addAnnotation(Embeddable.class);
+			jpaEntityClass.addImport(Embeddable.class);
 
 			// add fields
 			for (String primaryKeyName : primaryKeyNames) {
 				Field field = fieldMap.get(primaryKeyName);
+				Class<?> fieldJavaType = field.getJavaType();
 				FieldSource<JavaClassSource> fieldSource = jpaEntityIdClass.addField()
 					.setName(field.getName())
-					.setType(field.getJavaType())
+					.setType(fieldJavaType)
 					.setPrivate();
+
+				// date import hack
+				if (fieldJavaType.equals(java.util.Date.class)) {
+					jpaEntityClass.addImport(java.util.Date.class);
+				}
 
 				fieldSource.addAnnotation(Getter.class);
 				fieldSource.addAnnotation(Setter.class);
 
+				String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
+				fieldSource.addAnnotation(Column.class).setLiteralValue("name", columnName);
+
 			}
+			// import column annotation
+			jpaEntityClass.addImport(Column.class);
+
 			// add id class
 			jpaEntityClass.addNestedType(jpaEntityIdClass).setPublic().setStatic(true);
 
@@ -182,13 +198,14 @@ public class JpaEntityGenerator {
 				log.error("\tError get relation object for entity {}. Skipping relation.", relation.getRelEntityName());
 			}
 			else {
+				String relationType = getPackageName(relationEntity) + "." + relationEntity.getEntityName();
 				FieldSource<JavaClassSource> relationFieldSource = jpaEntityClass.addField()
 					.setName(getRelationFieldName(relation))
-					.setType(getPackageName(relationEntity) + "." + relationEntity.getEntityName())
+					.setType(relationType)
 					.setPrivate();
 
 				relationFieldSource.addAnnotation(Getter.class);
-				relationFieldSource.addAnnotation(Setter.class);
+				// relationFieldSource.addAnnotation(Setter.class);
 
 				if (Relation.TYPE_ONE.equals(relation.getType())) {
 					relationFieldSource.addAnnotation(ManyToOne.class);

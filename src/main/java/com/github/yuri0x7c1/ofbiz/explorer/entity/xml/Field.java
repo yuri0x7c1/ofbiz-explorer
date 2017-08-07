@@ -8,7 +8,9 @@
 
 package com.github.yuri0x7c1.ofbiz.explorer.entity.xml;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -308,35 +310,35 @@ public class Field {
      * Get java type
      * @return
      */
-    public String getJavaType() {
+    public Class<?> getJavaType() {
 		if ("blob".equals(type)) {
-			return "java.sql.Blob";
+			return java.sql.Blob.class;
 		} else if ("object".equals(type)) {
-			return "Object";
+			return Object.class;
 		} else if ("byte-array".equals(type)) {
-			return "byte[]";
+			return byte[].class;
 
 		} else if ("currency-precise".equals(type)) {
-			return "BigDecimal";
+			return BigDecimal.class;
 		} else if ("currency-amount".equals(type)) {
-			return "BigDecimal";
+			return BigDecimal.class;
 		} else if ("fixed-point".equals(type)) {
-			return "BigDecimal";
+			return BigDecimal.class;
 
 		} else if ("date".equals(type)) {
-			return "java.util.Date";
+			return Date.class;
 		} else if ("time".equals(type)) {
-			return "Time";
+			return Date.class;
 		} else if ("date-time".equals(type)) {
-			return "java.util.Date";
+			return Date.class;
 
 		} else if ("numeric".equals(type)) {
-			return "Long";
+			return Long.class;
 		} else if ("floating-point".equals(type)) {
-			return "Double";
+			return Double.class;
 		}
 
-		return "String";
+		return String.class;
 	}
 
 }
