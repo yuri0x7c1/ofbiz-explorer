@@ -11,6 +11,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -146,6 +147,16 @@ public class JpaEntityGenerator {
 			jpaEntityIdClass.addAnnotation(Embeddable.class);
 			jpaEntityClass.addImport(Embeddable.class);
 
+			// add serialization stuff
+			jpaEntityIdClass.addInterface(Serializable.class);
+			jpaEntityIdClass.addField()
+			  .setName("serialVersionUID")
+			  .setType(long.class)
+			  .setLiteralInitializer(String.valueOf(RandomUtils.nextLong(0, Long.MAX_VALUE-1)) + "L")
+			  .setPublic()
+			  .setStatic(true)
+			  .setFinal(true);
+
 			// add fields
 			for (String primaryKeyName : primaryKeyNames) {
 				Field field = fieldMap.get(primaryKeyName);
@@ -183,14 +194,20 @@ public class JpaEntityGenerator {
 		// create columns
 		for (Field field : entity.getField()) {
 			if (!primaryKeyNames.contains(field.getName())) {
+				Class<?> fieldJavaType = field.getJavaType();
 				FieldSource<JavaClassSource> fieldSource = jpaEntityClass.addField()
 					.setName(field.getName())
-					.setType(field.getJavaType())
+					.setType(fieldJavaType)
 					.setPrivate();
 
 				String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
 				fieldSource.addAnnotation(Getter.class);
 				fieldSource.addAnnotation(Setter.class);
+
+				if (fieldJavaType.equals(byte[].class)) {
+					fieldSource.addAnnotation(Lob.class);
+				}
+
 				fieldSource.addAnnotation(Column.class)
 					.setLiteralValue("name", columnName);
 			}

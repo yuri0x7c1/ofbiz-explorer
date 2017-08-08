@@ -314,7 +314,7 @@ public class Field {
 		if ("blob".equals(type)) {
 			return java.sql.Blob.class;
 		} else if ("object".equals(type)) {
-			return Object.class;
+			return byte[].class;
 		} else if ("byte-array".equals(type)) {
 			return byte[].class;
 
