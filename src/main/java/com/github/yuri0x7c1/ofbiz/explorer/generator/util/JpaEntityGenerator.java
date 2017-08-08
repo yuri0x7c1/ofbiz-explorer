@@ -12,7 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.apache.commons.io.FileUtils;
@@ -87,7 +86,14 @@ public class JpaEntityGenerator {
 	}
 
 	public String getPackageName(Entity entity) {
-		return entity.getPackageName().replace("return", "_return").replace("enum", "_enum");
+		String packageName = entity.getPackageName().replace("return", "_return").replace("enum", "_enum");
+
+		String basePackage = env.getProperty("generator.base_package");
+		if (basePackage != null && !basePackage.equals("org.apache.ofbiz")) {
+			packageName = packageName.replace("org.apache.ofbiz", basePackage);
+		}
+
+		return  packageName;
 	}
 
 	public String generate(Entity entity) throws Exception {
@@ -198,32 +204,30 @@ public class JpaEntityGenerator {
 				log.error("\tError get relation object for entity {}. Skipping relation.", relation.getRelEntityName());
 			}
 			else {
-				String relationType = getPackageName(relationEntity) + "." + relationEntity.getEntityName();
-				FieldSource<JavaClassSource> relationFieldSource = jpaEntityClass.addField()
-					.setName(getRelationFieldName(relation))
-					.setType(relationType)
-					.setPrivate();
+				if (Relation.TYPE_ONE.equals(relation.getType()) ||
+						Relation.TYPE_ONE_NOFK.equals(relation.getType())) {
+					String relationType = getPackageName(relationEntity) + "." + relationEntity.getEntityName();
+					FieldSource<JavaClassSource> relationFieldSource = jpaEntityClass.addField()
+						.setName(getRelationFieldName(relation))
+						.setType(relationType)
+						.setPrivate();
 
-				relationFieldSource.addAnnotation(Getter.class);
-				// relationFieldSource.addAnnotation(Setter.class);
+					relationFieldSource.addAnnotation(Getter.class);
+					// relationFieldSource.addAnnotation(Setter.class);
 
-				if (Relation.TYPE_ONE.equals(relation.getType())) {
-					relationFieldSource.addAnnotation(OneToOne.class);
-				}
-				else if (Relation.TYPE_MANY.equals(relation.getType())) {
 					relationFieldSource.addAnnotation(ManyToOne.class);
-				}
 
-				boolean relModifiable = isJoinColumnModifiable(entity, relation.getKeyMap());
-				if (relation.getKeyMap().size() == 1) {
-					setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0), relModifiable);
-				}
-				else if (relation.getKeyMap().size() > 1) {
-					AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
-					for (KeyMap relKeyMap : relation.getKeyMap()) {
-						setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap, relModifiable);
+					boolean relModifiable = isJoinColumnModifiable(entity, relation.getKeyMap());
+					if (relation.getKeyMap().size() == 1) {
+						setJoinColumnValue(relationFieldSource.addAnnotation(JoinColumn.class), relation.getKeyMap().get(0), relModifiable);
 					}
+					else if (relation.getKeyMap().size() > 1) {
+						AnnotationSource<JavaClassSource> joinColumnsSource = relationFieldSource.addAnnotation(JoinColumns.class);
+						for (KeyMap relKeyMap : relation.getKeyMap()) {
+							setJoinColumnValue(joinColumnsSource.addAnnotationValue(JoinColumn.class), relKeyMap, relModifiable);
+						}
 
+					}
 				}
 			}
 		}

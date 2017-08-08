@@ -51,6 +51,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Relation {
 
 	public static final String TYPE_ONE = "one";
+	public static final String TYPE_ONE_NOFK = "one-nofk";
 	public static final String TYPE_MANY = "many";
 
     protected String description;
