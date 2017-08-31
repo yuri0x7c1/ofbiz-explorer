@@ -33,6 +33,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.KeyMap;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -137,15 +138,18 @@ public class JpaEntityGenerator {
 			String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
 			fieldSource.addAnnotation(Column.class)
 				.setLiteralValue("name", columnName);
+
+			// add equals and hashcode
+			jpaEntityClass.addAnnotation(EqualsAndHashCode.class).setStringValue("of", field.getName());
 		}
 		else if (primaryKeyNames.size() > 1) { // composite id
+			// import annotations to entity class
+			jpaEntityClass.addImport(Column.class);
+			jpaEntityClass.addImport(Embeddable.class);
+
 			// create id class
 			JavaClassSource jpaEntityIdClass = Roaster.create(JavaClassSource.class);
 			jpaEntityIdClass.setName(entity.getEntityName() + "Id");
-
-			// add annotation
-			jpaEntityIdClass.addAnnotation(Embeddable.class);
-			jpaEntityClass.addImport(Embeddable.class);
 
 			// add serialization stuff
 			jpaEntityIdClass.addInterface(Serializable.class);
@@ -176,10 +180,13 @@ public class JpaEntityGenerator {
 
 				String columnName = String.format("\"%s\"", field.getColName() == null ? GeneratorUtil.underscoredFromCamelCaseUpper(field.getName()) : field.getColName());
 				fieldSource.addAnnotation(Column.class).setLiteralValue("name", columnName);
-
 			}
-			// import column annotation
-			jpaEntityClass.addImport(Column.class);
+
+			// add annotations to id class
+			jpaEntityIdClass.addAnnotation(EqualsAndHashCode.class).setStringArrayValue("of", primaryKeyNames.toArray(new String[primaryKeyNames.size()]));
+			jpaEntityIdClass.addAnnotation(Embeddable.class);
+
+			/* add embedded id field to jpa entity class */
 
 			// add id class
 			jpaEntityClass.addNestedType(jpaEntityIdClass).setPublic().setStatic(true);
@@ -189,6 +196,10 @@ public class JpaEntityGenerator {
 			fieldSource.addAnnotation(Getter.class);
 			fieldSource.addAnnotation(Setter.class);
 			fieldSource.addAnnotation(EmbeddedId.class);
+
+			// add equals and hashcode
+			jpaEntityClass.addAnnotation(EqualsAndHashCode.class).setStringValue("of", "id");
+
 		}
 
 		// create columns
