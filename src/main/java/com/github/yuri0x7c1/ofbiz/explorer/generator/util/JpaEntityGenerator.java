@@ -95,6 +95,10 @@ public class JpaEntityGenerator {
 			packageName = packageName.replace("org.apache.ofbiz", basePackage);
 		}
 
+		String entityPackage = env.getProperty("generator.entity.package");
+		if (entityPackage != null) {
+			packageName += ".domain";
+		}
 		return  packageName;
 	}
 

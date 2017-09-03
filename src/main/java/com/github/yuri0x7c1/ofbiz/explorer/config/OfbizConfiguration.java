@@ -15,6 +15,9 @@ public class OfbizConfiguration {
 
 	@Value("${generator.base_package ?: 'org.apache.ofbiz'}")
 	public String basePackage;
+	
+	@Value("${generator.entity.package")
+	public String entityPackage;
 
 	@Bean
 	public OfbizInstance ofbizInstance() {
