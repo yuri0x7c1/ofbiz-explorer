@@ -14,7 +14,7 @@ import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.sidebar.Sections;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
-import com.github.yuri0x7c1.ofbiz.explorer.generator.util.JpaEntityGenerator;
+import com.github.yuri0x7c1.ofbiz.explorer.generator.util.EntityGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
@@ -41,7 +41,7 @@ public class EntityView extends CommonView implements View {
 	private OfbizInstance ofbizInstance;
 
 	@Autowired
-	private JpaEntityGenerator jpaEntityGenerator;
+	private EntityGenerator entityGenerator;
 
 	@Autowired
 	private Environment env;
@@ -61,7 +61,7 @@ public class EntityView extends CommonView implements View {
 			log.info("Generating all entities");
 			for (Entity entity : ofbizInstance.getAllEntities().values()) {
 				try {
-					jpaEntityGenerator.generate(entity);
+					entityGenerator.generate(entity);
 					String msg = String.format("Entity %s generated successfully to %s", entity.getEntityName(), env.getProperty("generator.destination_path"));
 					log.info(msg);
 				}
@@ -102,7 +102,7 @@ public class EntityView extends CommonView implements View {
 					log.debug("Entity name : {}", entity.getEntityName());
 
 					try {
-						jpaEntityGenerator.generate(entity);
+						entityGenerator.generate(entity);
 						String msg = String.format("Entity %s generated successfully to %s", entity.getEntityName(), env.getProperty("generator.destination_path"));
 						log.info(msg);
 						new Notification(msg,
