@@ -3,17 +3,21 @@ package com.github.yuri0x7c1.ofbiz.explorer.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.collections.map.LinkedMap;
 import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.MemberEntity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.ViewEntity;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributesInclude;
@@ -282,5 +286,25 @@ public class OfbizUtil {
 			return entity != null && entity.getField() != null ? entity.getField() : new ArrayList<>();
 		}
 		return new ArrayList<>();
+	}
+	
+	/**
+	 * Construct entity from view entity
+	 * @param viewEntity
+	 * @param ofbizInstance
+	 * @return
+	 */
+	public static Entity viewEntityToEntity(ViewEntity viewEntity, OfbizInstance ofbizInstance) {
+		Entity entity = new Entity();
+		
+		Map<String, Entity> members = new LinkedHashMap<>();
+		
+		for (MemberEntity m : viewEntity.getMemberEntity()) {
+			members.put(m.getEntityAlias(), ofbizInstance.getAllEntities().get(m.getEntityName()));
+		}
+		
+		
+		
+		return entity;
 	}
 }
