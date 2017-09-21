@@ -10,9 +10,10 @@ import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.collections.map.LinkedMap;
 import org.springframework.boot.ApplicationHome;
 
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Alias;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.AliasAll;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
@@ -289,21 +290,59 @@ public class OfbizUtil {
 	}
 	
 	/**
+	 * Get field from entity by name
+	 * @param entity
+	 * @param fieldName
+	 * @return
+	 */
+	public static Field getFieldFromEntity(Entity entity, String fieldName) {
+		for (Field field : entity.getField()) {
+			if (field.getName().equals(fieldName)) {
+				return field;
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Construct entity from view entity
+	 * TODO: this is hack!
 	 * @param viewEntity
 	 * @param ofbizInstance
 	 * @return
 	 */
 	public static Entity viewEntityToEntity(ViewEntity viewEntity, OfbizInstance ofbizInstance) {
 		Entity entity = new Entity();
+		entity.setEntityName(viewEntity.getEntityName());
+		entity.setPackageName(viewEntity.getPackageName());
 		
-		Map<String, Entity> members = new LinkedHashMap<>();
+		Map<String, Entity> memberEntities = new LinkedHashMap<>();
 		
 		for (MemberEntity m : viewEntity.getMemberEntity()) {
-			members.put(m.getEntityAlias(), ofbizInstance.getAllEntities().get(m.getEntityName()));
+			memberEntities.put(m.getEntityAlias(), ofbizInstance.getAllEntities().get(m.getEntityName()));
 		}
 		
+		for (AliasAll aliasAll : viewEntity.getAliasAll()) {
+			Entity e = memberEntities.get(aliasAll.getEntityAlias());
+			entity.getPrimaryKeyNames().addAll(e.getPrimaryKeyNames());
+			entity.getPrimKey().addAll(e.getPrimKey());
+			entity.getField().addAll(e.getField());
+			entity.getRelation().addAll(e.getRelation());
+		}
 		
+		for (Alias alias : viewEntity.getAlias()) {
+			Entity e = memberEntities.get(alias.getEntityAlias());
+			Field f = getFieldFromEntity(e, alias.getName());
+			if (f != null) {
+				entity.getField().add(f);
+			}
+			else {
+				String msg = String.format("Error get field %s from entity %s", alias.getName(), e.getEntityName());
+				log.error(msg);
+			}
+		}
+		
+		entity.getRelation().addAll(viewEntity.getRelation());
 		
 		return entity;
 	}
