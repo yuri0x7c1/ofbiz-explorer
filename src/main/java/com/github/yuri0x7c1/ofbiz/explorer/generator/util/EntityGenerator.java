@@ -23,6 +23,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -99,6 +100,9 @@ public class EntityGenerator {
 		  .setStatic(true)
 		  .setFinal(true);
 
+		// from map method body
+		StringBuilder fromValueBody = new StringBuilder();
+		
 		// create columns
 		for (Field field : entity.getField()) {
 			Class<?> fieldJavaType = field.getJavaType();
@@ -109,7 +113,20 @@ public class EntityGenerator {
 
 			fieldSource.addAnnotation(Getter.class);
 			fieldSource.addAnnotation(Setter.class);
+			
+			// append param to "fromValue()" body
+			fromValueBody.append(String.format("%s = %s map.get(\"%s\");",
+				field.getName(),
+				"(" + field.getJavaType().getName() + ")",
+				field.getName()));
 		}
+		
+		// add "fromMap()" method to nested "In" type
+		MethodSource<JavaClassSource> fromValueSource = entityClass.addMethod()
+			.setName("fromValue")
+			.setPublic()
+			.setBody(fromValueBody.toString());
+		fromValueSource.addParameter("org.ofbiz.entity.GenericValue", "value");
 
 		String destinationPath = env.getProperty("generator.destination_path");
 
