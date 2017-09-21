@@ -77,7 +77,7 @@ public class EntityGenerator {
 
 		String entityPackage = env.getProperty("generator.entity.package");
 		if (entityPackage != null) {
-			packageName += ".entity";
+			packageName += "." + entityPackage;
 		}
 		return  packageName;
 	}
