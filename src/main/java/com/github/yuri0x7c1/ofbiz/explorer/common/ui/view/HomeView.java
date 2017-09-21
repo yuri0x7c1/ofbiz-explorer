@@ -8,6 +8,7 @@ import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
 
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.sidebar.Sections;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.ViewEntity;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance.Component;
@@ -66,6 +67,15 @@ public class HomeView extends CommonView implements View {
     				treeData.addItem(componentNode, entitydefNode);
     				for (Entity entity : component.getEntities().values()) {
     					treeData.addItem(entitydefNode, new TreeNode(entity.getEntityName()));
+    				}
+    			}
+    			
+    			// creates virtual directory with view entities
+    			if (!component.getViewEntities().isEmpty()) {
+    				TreeNode viewEntitydefNode = new TreeNode(OfbizUtil.ENTITYDEF_VIEW_DIRECTORY_NAME);
+    				treeData.addItem(componentNode, viewEntitydefNode);
+    				for (ViewEntity viewEntity : component.getViewEntities().values()) {
+    					treeData.addItem(viewEntitydefNode, new TreeNode(viewEntity.getEntityName()));
     				}
     			}
 

@@ -14,6 +14,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.ViewEntity;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributesInclude;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Services;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OfbizUtil {
 
 	public static final String ENTITYDEF_DIRECTORY_NAME = "entitydef";
+	public static final String ENTITYDEF_VIEW_DIRECTORY_NAME = "entitydef.view"; // virtual directory for view entities
 	public static final String SERVICEDEF_DIRECTORY_NAME = "servicedef";
 	public static final String COMPONENT_LOAD_FILE_NAME = "component-load.xml";
 
@@ -86,6 +88,21 @@ public class OfbizUtil {
 			}
 		}
 		return entities;
+	}
+	
+	/**
+	 * Get view entity list from entitymodel
+	 * @param entitymodel
+	 * @return
+	 */
+	public static List<ViewEntity> getViewEntities(Entitymodel entitymodel) {
+		List<ViewEntity> viewEntities = new ArrayList<>();
+		for (Object o : entitymodel.getEntityOrViewEntityOrExtendEntity()) {
+			if (o instanceof ViewEntity) {
+				viewEntities.add((ViewEntity) o);
+			}
+		}
+		return viewEntities;
 	}
 
 	/**
@@ -158,19 +175,25 @@ public class OfbizUtil {
 
 				for (File f : componentDir.listFiles()) {
 					if (f.isDirectory()) {
-						// TODO: move this block to method returning map of entities
 						if (ENTITYDEF_DIRECTORY_NAME.equals(f.getName())) {
 							for (File entitymodelFile : f.listFiles()) {
 								if (entitymodelFile.isFile() && entitymodelFile.getName().endsWith("entitymodel.xml")) {
 									log.info("entitymodel file {}", entitymodelFile.getName());
 									Entitymodel entitymodel = readEntitymodel(entitymodelFile);
+									
+									// get entities
 									getEntities(entitymodel).forEach(entity -> {
 										component.getEntities().put(entity.getEntityName(), entity);
+									});
+									
+									// get view entities
+									getViewEntities(entitymodel).forEach(viewEntity -> {
+										component.getViewEntities().put(viewEntity.getEntityName(), viewEntity);
 									});
 
 								}
 							}
-						} // TODO: move this block to method returning map of services
+						}
 						else if (SERVICEDEF_DIRECTORY_NAME.equals(f.getName())) {
 							for (File servicesFile : f.listFiles()) {
 								if (servicesFile.isFile() && servicesFile.getName().startsWith("services")) {
