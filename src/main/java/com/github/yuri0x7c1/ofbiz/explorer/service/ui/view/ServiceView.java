@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.vaadin.gridutil.cell.GridCellFilter;
 import org.vaadin.spring.i18n.I18N;
 import org.vaadin.spring.sidebar.annotation.SideBarItem;
 import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
@@ -30,6 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Services", order = 2)
 @VaadinFontIcon(VaadinIcons.COG)
 public class ServiceView extends CommonView implements View {
+	
+	private static final String SERVICE_NAME_COL_ID = "name";
+	private static final String SERVICE_DESCRIPTION_COL_ID = "description";
+	
 	@Autowired
 	private I18N i18n;
 
@@ -40,21 +45,24 @@ public class ServiceView extends CommonView implements View {
 	private Environment env;
 
 	private Grid<Service> serviceGrid = new Grid<>();
+	
+	private GridCellFilter<Service> serviceGridFilter;
+	
 
 	@Autowired
 	ServiceGenerator serviceGenerator;
 
 	@Autowired
 	ServiceFormGenerator serviceFormGenerator;
-
+	
 	@PostConstruct
 	public void init() {
 		setHeaderText(i18n.get("Services"));
 
 		serviceGrid.setItems(ofbizInstance.getAllServices().values());
 		serviceGrid.setWidth("100%");
-		serviceGrid.addColumn(Service::getName).setCaption(i18n.get("Service.name"));
-		serviceGrid.addColumn(Service::getDescription).setCaption(i18n.get("Description"));
+		serviceGrid.addColumn(Service::getName).setCaption(i18n.get("Service.name")).setId(SERVICE_NAME_COL_ID);
+		serviceGrid.addColumn(Service::getDescription).setCaption(i18n.get("Description")).setId(SERVICE_DESCRIPTION_COL_ID);
 		serviceGrid.addColumn(entity -> i18n.get("View"),
 				new ButtonRenderer<Service>(clickEvent -> {
 					getUI().getNavigator().navigateTo(ServiceDetailView.NAME + "/" + clickEvent.getItem().getName());
@@ -86,6 +94,11 @@ public class ServiceView extends CommonView implements View {
 			    }));
 
 
+		// init filters
+		serviceGridFilter = new GridCellFilter<>(serviceGrid, Service.class);
+		serviceGridFilter.setTextFilter(SERVICE_NAME_COL_ID, true, false);
+		serviceGridFilter.setTextFilter(SERVICE_DESCRIPTION_COL_ID, true, false);
+		
 		addComponent(serviceGrid);
 
 	}
