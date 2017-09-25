@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.vaadin.gridutil.cell.GridCellFilter;
 import org.vaadin.spring.i18n.I18N;
 import org.vaadin.spring.sidebar.annotation.SideBarItem;
 import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
@@ -34,6 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Entities", order = 1)
 @VaadinFontIcon(VaadinIcons.DATABASE)
 public class EntityView extends CommonView implements View {
+	
+	private static final String ENTITY_NAME_COL_ID = "entityName";
+	private static final String ENTITY_DESCRIPTION_COL_ID = "description";
+	
 	@Autowired
 	private I18N i18n;
 
@@ -47,6 +52,8 @@ public class EntityView extends CommonView implements View {
 	private Environment env;
 
 	private Grid<Entity> entityGrid = new Grid<>();
+	
+	private GridCellFilter<Entity> entityGridFilter;
 
 	private Button generateAllButton = new Button("Generate all");
 
@@ -88,8 +95,8 @@ public class EntityView extends CommonView implements View {
 		// entity grid
 		entityGrid.setItems(ofbizInstance.getAllEntities().values());
 		entityGrid.setWidth("100%");
-		entityGrid.addColumn(Entity::getEntityName).setCaption(i18n.get("Entity.name"));
-		entityGrid.addColumn(Entity::getDescription).setCaption(i18n.get("Description"));
+		entityGrid.addColumn(Entity::getEntityName).setCaption(i18n.get("Entity.name")).setId(ENTITY_NAME_COL_ID);
+		entityGrid.addColumn(Entity::getDescription).setCaption(i18n.get("Description")).setId(ENTITY_DESCRIPTION_COL_ID);
 		entityGrid.addColumn(entity -> i18n.get("View"), // view entity button
 				new ButtonRenderer<Entity>(clickEvent -> {
 					getUI().getNavigator().navigateTo(EntityDetailView.NAME + "/" + clickEvent.getItem().getEntityName());
@@ -117,6 +124,11 @@ public class EntityView extends CommonView implements View {
 						    .show(Page.getCurrent());
 					}
 			    }));
+		
+		// init filters
+		entityGridFilter = new GridCellFilter<>(entityGrid, Entity.class);
+		entityGridFilter.setTextFilter(ENTITY_NAME_COL_ID, true, false);
+		entityGridFilter.setTextFilter(ENTITY_DESCRIPTION_COL_ID, true, false);
 
 
 		addComponent(entityGrid);
