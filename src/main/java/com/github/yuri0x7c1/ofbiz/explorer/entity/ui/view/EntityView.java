@@ -35,10 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Entities", order = 1)
 @VaadinFontIcon(VaadinIcons.DATABASE)
 public class EntityView extends CommonView implements View {
-	
+
 	private static final String ENTITY_NAME_COL_ID = "entityName";
 	private static final String ENTITY_DESCRIPTION_COL_ID = "description";
-	
+
 	@Autowired
 	private I18N i18n;
 
@@ -52,10 +52,18 @@ public class EntityView extends CommonView implements View {
 	private Environment env;
 
 	private Grid<Entity> entityGrid = new Grid<>();
-	
+
 	private GridCellFilter<Entity> entityGridFilter;
 
 	private Button generateAllButton = new Button("Generate all");
+
+	public EntityView() {
+		setHeight(100.0f, Unit.PERCENTAGE);
+		addHeaderComponent(generateAllButton);
+		entityGrid.setHeight(100.0f, Unit.PERCENTAGE);
+		addComponent(entityGrid);
+		setExpandRatio(entityGrid, 1.0f);
+	}
 
 	@PostConstruct
 	public void init() {
@@ -90,7 +98,7 @@ public class EntityView extends CommonView implements View {
 						.show(Page.getCurrent());
 			}
 		});
-		addHeaderComponent(generateAllButton);
+
 
 		// entity grid
 		entityGrid.setItems(ofbizInstance.getAllEntities().values());
@@ -124,15 +132,11 @@ public class EntityView extends CommonView implements View {
 						    .show(Page.getCurrent());
 					}
 			    }));
-		
+
 		// init filters
 		entityGridFilter = new GridCellFilter<>(entityGrid, Entity.class);
 		entityGridFilter.setTextFilter(ENTITY_NAME_COL_ID, true, false);
 		entityGridFilter.setTextFilter(ENTITY_DESCRIPTION_COL_ID, true, false);
-
-
-		addComponent(entityGrid);
-
 	}
 
     @Override
