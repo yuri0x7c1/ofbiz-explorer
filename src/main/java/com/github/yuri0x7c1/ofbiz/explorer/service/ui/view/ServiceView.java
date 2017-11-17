@@ -19,6 +19,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Page;
+import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
@@ -31,10 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Services", order = 2)
 @VaadinFontIcon(VaadinIcons.COG)
 public class ServiceView extends CommonView implements View {
-	
+
 	private static final String SERVICE_NAME_COL_ID = "name";
 	private static final String SERVICE_DESCRIPTION_COL_ID = "description";
-	
+
 	@Autowired
 	private I18N i18n;
 
@@ -45,16 +46,23 @@ public class ServiceView extends CommonView implements View {
 	private Environment env;
 
 	private Grid<Service> serviceGrid = new Grid<>();
-	
+
 	private GridCellFilter<Service> serviceGridFilter;
-	
+
 
 	@Autowired
 	ServiceGenerator serviceGenerator;
 
 	@Autowired
 	ServiceFormGenerator serviceFormGenerator;
-	
+
+	public ServiceView() {
+		setHeight(100.0f, Unit.PERCENTAGE);
+		serviceGrid.setHeight(100.0f, Unit.PERCENTAGE);
+		addComponent(serviceGrid);
+		setExpandRatio(serviceGrid, 1.0f);
+	}
+
 	@PostConstruct
 	public void init() {
 		setHeaderText(i18n.get("Services"));
@@ -98,9 +106,6 @@ public class ServiceView extends CommonView implements View {
 		serviceGridFilter = new GridCellFilter<>(serviceGrid, Service.class);
 		serviceGridFilter.setTextFilter(SERVICE_NAME_COL_ID, true, false);
 		serviceGridFilter.setTextFilter(SERVICE_DESCRIPTION_COL_ID, true, false);
-		
-		addComponent(serviceGrid);
-
 	}
 
     @Override
