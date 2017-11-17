@@ -20,6 +20,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Page;
+import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
@@ -32,16 +33,16 @@ import lombok.extern.slf4j.Slf4j;
 @SideBarItem(sectionId = Sections.VIEWS, caption = "View Entities", order = 1)
 @VaadinFontIcon(VaadinIcons.DATABASE)
 public class ViewEntityView extends CommonView implements View {
-	
+
 	private static final String VIEW_ENTITY_NAME_COL_ID = "entityName";
 	private static final String VIEW_ENTITY_DESCRIPTION_COL_ID = "description";
-	
+
 	@Autowired
 	private I18N i18n;
 
 	@Autowired
 	private OfbizInstance ofbizInstance;
-	
+
 	@Autowired
 	private EntityGenerator entityGenerator;
 
@@ -49,8 +50,15 @@ public class ViewEntityView extends CommonView implements View {
 	private Environment env;
 
 	private Grid<ViewEntity> viewEntityGrid = new Grid<>();
-	
+
 	private GridCellFilter<ViewEntity> viewEntityGridFilter;
+
+	public ViewEntityView() {
+		setHeight(100.0f, Unit.PERCENTAGE);
+		viewEntityGrid.setHeight(100.0f, Unit.PERCENTAGE);
+		addComponent(viewEntityGrid);
+		setExpandRatio(viewEntityGrid, 1.0f);
+	}
 
 	@PostConstruct
 	public void init() {
@@ -61,7 +69,7 @@ public class ViewEntityView extends CommonView implements View {
 		viewEntityGrid.setWidth("100%");
 		viewEntityGrid.addColumn(ViewEntity::getEntityName).setCaption(i18n.get("Entity.name")).setId(VIEW_ENTITY_NAME_COL_ID);
 		viewEntityGrid.addColumn(ViewEntity::getDescription).setCaption(i18n.get("Description")).setId(VIEW_ENTITY_DESCRIPTION_COL_ID);
-		
+
 		viewEntityGrid.addColumn(viewEntity -> i18n.get("Generate"), // generate entity button
 				new ButtonRenderer<ViewEntity>(clickEvent -> {
 
@@ -84,14 +92,11 @@ public class ViewEntityView extends CommonView implements View {
 						    .show(Page.getCurrent());
 					}
 			    }));
-		
+
 		// init filters
 		viewEntityGridFilter = new GridCellFilter<>(viewEntityGrid, ViewEntity.class);
 		viewEntityGridFilter.setTextFilter(VIEW_ENTITY_NAME_COL_ID, true, false);
 		viewEntityGridFilter.setTextFilter(VIEW_ENTITY_DESCRIPTION_COL_ID, true, false);
-		
-		addComponent(viewEntityGrid);
-
 	}
 
     @Override
