@@ -133,6 +133,7 @@ public class EntityGenerator {
 
 		MethodSource<JavaClassSource> constructor = entityClass.addMethod()
 			.setConstructor(true)
+			.setPublic()
 			.setBody(constructorBody.toString());
 
 		constructor.addParameter("org.ofbiz.entity.GenericValue", "value");
