@@ -83,12 +83,19 @@ public class EntityGenerator {
 		return  packageName;
 	}
 
-	public String generate(Entity entity) throws Exception {
-		log.info("Generate entity: {}", entity.getEntityName());
+	/**
+	 * Create entity class
+	 * @param entity
+	 * @return
+	 */
+	private JavaClassSource createEntityClass(Entity entity) {
 		// create entity class
 		final JavaClassSource entityClass = Roaster.create(JavaClassSource.class);
 		entityClass.setPackage(getPackageName(entity))
 			.setName(entity.getEntityName());
+
+		// comment
+		entityClass.getJavaDoc().setFullText(GeneratorUtil.createCaptionFromCamelCase(entity.getEntityName()));
 
 		// add serialization stuff
 		entityClass.addInterface(Serializable.class);
@@ -100,33 +107,107 @@ public class EntityGenerator {
 		  .setStatic(true)
 		  .setFinal(true);
 
-		// from map method body
-		StringBuilder fromValueBody = new StringBuilder();
-		
 		// create columns
 		for (Field field : entity.getField()) {
 			Class<?> fieldJavaType = field.getJavaType();
-			FieldSource<JavaClassSource> fieldSource = entityClass.addField()
+			FieldSource<JavaClassSource> entityField = entityClass.addField()
 				.setName(field.getName())
 				.setType(fieldJavaType)
 				.setPrivate();
 
-			fieldSource.addAnnotation(Getter.class);
-			fieldSource.addAnnotation(Setter.class);
-			
+			// add comment
+			entityField.getJavaDoc().setFullText(GeneratorUtil.createCaptionFromCamelCase(field.getName()));
+
+			// add lombok getters an setters
+			entityField.addAnnotation(Getter.class);
+			entityField.addAnnotation(Setter.class);
+		}
+
+		return entityClass;
+	}
+
+	/**
+	 * Create constructor with GenericValue entity parameter
+	 * @param entity
+	 * @param entityClass
+	 */
+	private void createConstructorWithGenericValueParameter(Entity entity, JavaClassSource entityClass) {
+		// create columns
+		StringBuilder constructorBody = new StringBuilder();
+
+		// constructor body
+		for (Field field : entity.getField()) {
+			// append param to "fromValue()" body
+			constructorBody.append(String.format("%s = %s value.get(\"%s\");",
+				field.getName(),
+				"(" + field.getJavaType().getName() + ")",
+				field.getName()));
+		}
+
+		MethodSource<JavaClassSource> constructor = entityClass.addMethod()
+			.setConstructor(true)
+			.setBody(constructorBody.toString());
+
+		constructor.addParameter("org.ofbiz.entity.GenericValue", "value");
+	}
+
+	/**
+	 * Create from value static method
+	 * @param entity
+	 * @param entityClass
+	 */
+	private void createFromValueStaticMethod(Entity entity, JavaClassSource entityClass) {
+		String fromValueMethodBody = "return new " + entityClass.getName() + "(value);";
+
+
+		MethodSource<JavaClassSource> fromValueMethod = entityClass.addMethod()
+			.setName("fromValue")
+			.setPublic()
+			.setStatic(true)
+			.setReturnType(entityClass)
+			.setBody(fromValueMethodBody);
+
+		fromValueMethod.addParameter("org.ofbiz.entity.GenericValue", "value");
+	}
+
+	/**
+	 * Generate code
+	 * @param entity
+	 * @return
+	 * @throws Exception
+	 */
+	public String generate(Entity entity) throws Exception {
+		log.info("Generate entity: {}", entity.getEntityName());
+
+		// create entity class
+		final JavaClassSource entityClass = createEntityClass(entity);
+
+		// create constructor
+		createConstructorWithGenericValueParameter(entity, entityClass);
+
+		// create from value static method
+		createFromValueStaticMethod(entity, entityClass);
+
+		/*
+		// from map method body
+		StringBuilder fromValueBody = new StringBuilder();
+
+		// create columns
+		for (Field field : entity.getField()) {
 			// append param to "fromValue()" body
 			fromValueBody.append(String.format("%s = %s map.get(\"%s\");",
 				field.getName(),
 				"(" + field.getJavaType().getName() + ")",
 				field.getName()));
 		}
-		
+
 		// add "fromMap()" method to nested "In" type
 		MethodSource<JavaClassSource> fromValueSource = entityClass.addMethod()
 			.setName("fromValue")
 			.setPublic()
 			.setBody(fromValueBody.toString());
 		fromValueSource.addParameter("org.ofbiz.entity.GenericValue", "value");
+		*/
 
 		String destinationPath = env.getProperty("generator.destination_path");
 
@@ -136,6 +217,4 @@ public class EntityGenerator {
 
 		return entityClass.toString();
 	}
-
-
 }
