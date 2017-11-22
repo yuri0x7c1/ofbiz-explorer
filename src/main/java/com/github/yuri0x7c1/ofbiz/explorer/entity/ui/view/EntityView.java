@@ -22,6 +22,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Page;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
@@ -31,6 +32,7 @@ import com.vaadin.ui.themes.ValoTheme;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@UIScope
 @SpringView(name = "entities")
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Entities", order = 1)
 @VaadinFontIcon(VaadinIcons.DATABASE)

@@ -18,6 +18,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.themes.ValoTheme;
@@ -25,6 +26,7 @@ import com.vaadin.ui.themes.ValoTheme;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@UIScope
 @SpringView(name = ServiceDetailView.NAME)
 public class ServiceDetailView extends CommonView implements View {
 	private static final long serialVersionUID = 719002900696360148L;

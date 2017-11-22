@@ -20,6 +20,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.Tree;
 
 import lombok.Getter;
@@ -27,6 +28,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+@UIScope
 @SpringView(name = "")
 @SideBarItem(sectionId = Sections.VIEWS, caption = "Home", order = 0)
 @VaadinFontIcon(VaadinIcons.HOME)
@@ -69,7 +71,7 @@ public class HomeView extends CommonView implements View {
     					treeData.addItem(entitydefNode, new TreeNode(entity.getEntityName()));
     				}
     			}
-    			
+
     			// creates virtual directory with view entities
     			if (!component.getViewEntities().isEmpty()) {
     				TreeNode viewEntitydefNode = new TreeNode(OfbizUtil.ENTITYDEF_VIEW_DIRECTORY_NAME);
