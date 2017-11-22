@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public enum FieldType {
 	/*
 	    <!-- General Types -->
@@ -100,8 +100,10 @@ public enum FieldType {
 	@Getter
 	private final String name;
 
+	@Getter
 	private final Class<?> javaType;
 
+	@Getter
 	private final List<Annotation> annotations = new ArrayList<>();
 
 	FieldType(String name, Class<?> javaType) {
@@ -115,12 +117,16 @@ public enum FieldType {
 		this.annotations.addAll(Arrays.asList(annotations));
 	}
 
-	FieldType findByName(String name) {
+	public static FieldType find(String name) {
 		for (FieldType fieldType : values()) {
 			if (fieldType.name.equals(name)) {
 				return fieldType;
 			}
 		}
 		return UNKNOWN;
+	}
+
+	public static FieldType find(Field field) {
+		return find(field.getType());
 	}
 }

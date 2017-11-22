@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
@@ -96,7 +97,7 @@ public class EntityGenerator {
 
 		// create columns
 		for (Field field : entity.getField()) {
-			Class<?> fieldJavaType = field.getJavaType();
+			Class<?> fieldJavaType = FieldType.find(field).getJavaType();
 			FieldSource<JavaClassSource> entityField = entityClass.addField()
 				.setName(field.getName())
 				.setType(fieldJavaType)
@@ -127,7 +128,7 @@ public class EntityGenerator {
 			// append param to "fromValue()" body
 			constructorBody.append(String.format("%s = %s value.get(\"%s\");",
 				field.getName(),
-				"(" + field.getJavaType().getName() + ")",
+				"(" + FieldType.find(field).getJavaType().getSimpleName() + ")",
 				field.getName()));
 		}
 

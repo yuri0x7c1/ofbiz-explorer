@@ -305,40 +305,4 @@ public class Field {
     public void setFieldSet(String value) {
         this.fieldSet = value;
     }
-
-    /**
-     * Get java type
-     * @return
-     */
-    public Class<?> getJavaType() {
-		if ("blob".equals(type)) {
-			return java.sql.Blob.class;
-		} else if ("object".equals(type)) {
-			return byte[].class;
-		} else if ("byte-array".equals(type)) {
-			return byte[].class;
-
-		} else if ("currency-precise".equals(type)) {
-			return BigDecimal.class;
-		} else if ("currency-amount".equals(type)) {
-			return BigDecimal.class;
-		} else if ("fixed-point".equals(type)) {
-			return BigDecimal.class;
-
-		} else if ("date".equals(type)) {
-			return Date.class;
-		} else if ("time".equals(type)) {
-			return Date.class;
-		} else if ("date-time".equals(type)) {
-			return Date.class;
-
-		} else if ("numeric".equals(type)) {
-			return Long.class;
-		} else if ("floating-point".equals(type)) {
-			return Double.class;
-		}
-
-		return String.class;
-	}
-
 }
