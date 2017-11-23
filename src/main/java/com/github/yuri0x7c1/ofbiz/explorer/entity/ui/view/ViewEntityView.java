@@ -1,5 +1,8 @@
 package com.github.yuri0x7c1.ofbiz.explorer.entity.ui.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +26,11 @@ import com.vaadin.server.Page;
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.annotation.UIScope;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.themes.ValoTheme;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,8 +60,11 @@ public class ViewEntityView extends CommonView implements View {
 
 	private GridCellFilter<ViewEntity> viewEntityGridFilter;
 
+	private Button generateAllButton = new Button("Generate all");
+
 	public ViewEntityView() {
 		setHeight(100.0f, Unit.PERCENTAGE);
+		addHeaderComponent(generateAllButton);
 		viewEntityGrid.setHeight(100.0f, Unit.PERCENTAGE);
 		addComponent(viewEntityGrid);
 		setExpandRatio(viewEntityGrid, 1.0f);
@@ -66,8 +74,39 @@ public class ViewEntityView extends CommonView implements View {
 	public void init() {
 		setHeaderText(i18n.get("ViewEntities"));
 
+		// generate all button
+		generateAllButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
+		generateAllButton.addClickListener(event -> {
+			List<String> errorEntities = new ArrayList<>();
+			log.info("Generating all view entities");
+			for (ViewEntity viewEntity : ofbizInstance.getAllViewEntities().values()) {
+				try {
+					Entity entity = OfbizUtil.viewEntityToEntity(viewEntity, ofbizInstance);
+					entityGenerator.generate(entity);
+					String msg = String.format("View entity %s generated successfully to %s", entity.getEntityName(), env.getProperty("generator.destination_path"));
+					log.info(msg);
+				}
+				catch (Exception e) {
+					errorEntities.add(viewEntity.getEntityName());
+					String msg = String.format("Generate view entity %s failed", viewEntity.getEntityName());
+					log.error(msg, e);
+				}
+			}
+
+			if (errorEntities.isEmpty()) {
+				new Notification("View entities generated!",
+						Notification.Type.HUMANIZED_MESSAGE)
+						.show(Page.getCurrent());
+			}
+			else {
+				new Notification("View entities generated with problems in:" + String.join(", ", errorEntities),
+						Notification.Type.WARNING_MESSAGE)
+						.show(Page.getCurrent());
+			}
+		});
+
 		// entity grid
-		viewEntityGrid.setItems(ofbizInstance.getAllViewEntites().values());
+		viewEntityGrid.setItems(ofbizInstance.getAllViewEntities().values());
 		viewEntityGrid.setWidth("100%");
 		viewEntityGrid.addColumn(ViewEntity::getEntityName).setCaption(i18n.get("Entity.name")).setId(VIEW_ENTITY_NAME_COL_ID);
 		viewEntityGrid.addColumn(ViewEntity::getDescription).setCaption(i18n.get("Description")).setId(VIEW_ENTITY_DESCRIPTION_COL_ID);

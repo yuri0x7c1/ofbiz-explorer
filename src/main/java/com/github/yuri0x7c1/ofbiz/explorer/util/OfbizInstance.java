@@ -88,7 +88,7 @@ public class OfbizInstance {
 	 * Return all OFBiz view entities
 	 * @return
 	 */
-	public Map<String, ViewEntity> getAllViewEntites() {
+	public Map<String, ViewEntity> getAllViewEntities() {
 		if (allViewEntities.isEmpty()) {
 			componentGroups.forEach((componentGroupName, componentGroup) -> {
 				componentGroup.components.forEach((componentName, component) -> {
