@@ -94,7 +94,7 @@ public class OfbizUtil {
 		}
 		return entities;
 	}
-	
+
 	/**
 	 * Get view entity list from entitymodel
 	 * @param entitymodel
@@ -185,12 +185,12 @@ public class OfbizUtil {
 								if (entitymodelFile.isFile() && entitymodelFile.getName().endsWith("entitymodel.xml")) {
 									log.info("entitymodel file {}", entitymodelFile.getName());
 									Entitymodel entitymodel = readEntitymodel(entitymodelFile);
-									
+
 									// get entities
 									getEntities(entitymodel).forEach(entity -> {
 										component.getEntities().put(entity.getEntityName(), entity);
 									});
-									
+
 									// get view entities
 									getViewEntities(entitymodel).forEach(viewEntity -> {
 										component.getViewEntities().put(viewEntity.getEntityName(), viewEntity);
@@ -288,7 +288,7 @@ public class OfbizUtil {
 		}
 		return new ArrayList<>();
 	}
-	
+
 	/**
 	 * Get field from entity by name
 	 * @param entity
@@ -303,7 +303,7 @@ public class OfbizUtil {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Construct entity from view entity
 	 * TODO: this is hack!
@@ -315,13 +315,13 @@ public class OfbizUtil {
 		Entity entity = new Entity();
 		entity.setEntityName(viewEntity.getEntityName());
 		entity.setPackageName(viewEntity.getPackageName());
-		
+
 		Map<String, Entity> memberEntities = new LinkedHashMap<>();
-		
+
 		for (MemberEntity m : viewEntity.getMemberEntity()) {
 			memberEntities.put(m.getEntityAlias(), ofbizInstance.getAllEntities().get(m.getEntityName()));
 		}
-		
+
 		for (AliasAll aliasAll : viewEntity.getAliasAll()) {
 			Entity e = memberEntities.get(aliasAll.getEntityAlias());
 			entity.getPrimaryKeyNames().addAll(e.getPrimaryKeyNames());
@@ -329,21 +329,33 @@ public class OfbizUtil {
 			entity.getField().addAll(e.getField());
 			entity.getRelation().addAll(e.getRelation());
 		}
-		
+
 		for (Alias alias : viewEntity.getAlias()) {
 			Entity e = memberEntities.get(alias.getEntityAlias());
+
+			// try to get field from alias entity by "name" attribute
 			Field f = getFieldFromEntity(e, alias.getName());
+			String aliasFieldName = alias.getName();
+
+			// try to get field from alias entity by "field" attribute
+			if (f == null) {
+				f = getFieldFromEntity(e, alias.getField());
+				aliasFieldName = alias.getField();
+			}
+
 			if (f != null) {
 				entity.getField().add(f);
 			}
 			else {
-				String msg = String.format("Error get field %s from entity %s", alias.getName(), e.getEntityName());
+				String msg = String.format("Error get field %s from entity %s",
+						aliasFieldName,
+						e.getEntityName());
 				log.error(msg);
 			}
 		}
-		
+
 		entity.getRelation().addAll(viewEntity.getRelation());
-		
+
 		return entity;
 	}
 }
