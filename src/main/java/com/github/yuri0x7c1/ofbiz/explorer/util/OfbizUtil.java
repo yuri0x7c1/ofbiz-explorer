@@ -9,11 +9,13 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 
 import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Alias;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.AliasAll;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Boolean;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
@@ -305,6 +307,27 @@ public class OfbizUtil {
 	}
 
 	/**
+	 * Clone field
+	 * TODO: clone validations
+	 * @param field
+	 * @return
+	 */
+	public static Field cloneField(Field field) {
+		if (field == null) return null;
+
+		Field newField = new Field();
+		newField.setDescription(field.getDescription());
+		newField.setName(field.getName());
+		newField.setColName(field.getColName());
+		newField.setType(field.getType());
+		newField.setEncrypt(field.getEncrypt());
+		newField.setEnableAuditLog(field.getEnableAuditLog());
+		newField.setNotNull(field.getNotNull());
+		newField.setFieldSet(field.getFieldSet());
+		return newField;
+	}
+
+	/**
 	 * Construct entity from view entity
 	 * TODO: this is hack!
 	 * @param viewEntity
@@ -334,13 +357,13 @@ public class OfbizUtil {
 			Entity e = memberEntities.get(alias.getEntityAlias());
 
 			// try to get field from alias entity by "name" attribute
-			Field f = getFieldFromEntity(e, alias.getName());
-			String aliasFieldName = alias.getName();
+			Field f = cloneField(getFieldFromEntity(e, alias.getName()));
+
 
 			// try to get field from alias entity by "field" attribute
 			if (f == null) {
-				f = getFieldFromEntity(e, alias.getField());
-				aliasFieldName = alias.getField();
+				f = cloneField(getFieldFromEntity(e, alias.getField()));
+				if (f != null) f.setName(alias.getField());
 			}
 
 			if (f != null) {
@@ -348,7 +371,7 @@ public class OfbizUtil {
 			}
 			else {
 				String msg = String.format("Error get field %s from entity %s",
-						aliasFieldName,
+						f.getName(),
 						e.getEntityName());
 				log.error(msg);
 			}
