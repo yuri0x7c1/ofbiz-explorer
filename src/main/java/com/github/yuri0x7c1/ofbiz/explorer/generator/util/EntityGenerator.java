@@ -30,6 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class EntityGenerator {
+
+	public static final String GENERIC_VALUE_CLASS_NAME = "org.apache.ofbiz.entity.GenericValue";
+
 	@Autowired
 	private OfbizInstance ofbizInstance;
 
@@ -137,7 +140,7 @@ public class EntityGenerator {
 			.setPublic()
 			.setBody(constructorBody.toString());
 
-		constructor.addParameter("org.ofbiz.entity.GenericValue", "value");
+		constructor.addParameter(GENERIC_VALUE_CLASS_NAME, "value");
 	}
 
 	/**
@@ -155,7 +158,7 @@ public class EntityGenerator {
 			.setReturnType(entityClass)
 			.setBody(fromValueMethodBody);
 
-		fromValueMethod.addParameter("org.ofbiz.entity.GenericValue", "value");
+		fromValueMethod.addParameter(GENERIC_VALUE_CLASS_NAME, "value");
 	}
 
 	/**
