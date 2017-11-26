@@ -1,7 +1,6 @@
 package com.github.yuri0x7c1.ofbiz.explorer;
 
 import java.io.File;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
@@ -33,10 +32,7 @@ public class Application implements CommandLineRunner {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Override
-	public void run(String... args) throws Exception {
-		log.info(env.getProperty("generator.destination_path"));
-
+	private  void listServiceParameterTypes() throws Exception {
 		TreeSet<String> attributeTypes = new TreeSet<>();
 		for (Service service : ofbizInstance.getAllServices().values()) {
 			for (Object attribute : service.getAutoAttributesOrAttribute()) {
@@ -49,5 +45,10 @@ public class Application implements CommandLineRunner {
 		log.info("Service attribute types:\n {}", attributeTypes);
 		File file = new File("service_attribute_types.txt");
 		FileUtils.writeLines(file, attributeTypes);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		log.info(env.getProperty("generator.destination_path"));
 	}
 }
