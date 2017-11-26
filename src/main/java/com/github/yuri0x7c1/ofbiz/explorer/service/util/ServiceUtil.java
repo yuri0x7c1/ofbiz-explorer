@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributes;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
@@ -57,6 +58,7 @@ public class ServiceUtil {
 							.optional(Boolean.valueOf(((AutoAttributes) attr).getOptional()))
 							.mode(((AutoAttributes) attr).getMode())
 							.entityName(entityName)
+							.type(FieldType.find(f).getJavaType().getName())
 							.build();
 					serviceParams.add(serviceParam);
 				}

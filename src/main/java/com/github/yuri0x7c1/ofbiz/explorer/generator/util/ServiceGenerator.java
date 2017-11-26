@@ -65,6 +65,9 @@ public class ServiceGenerator {
 			.setName(serviceClassName)
 			.setPackage(packageName);
 
+		// add caption
+		serviceSource.getJavaDoc().setFullText(GeneratorUtil.createCaptionFromCamelCase(service.getName()));
+
 		// some imports
 		serviceSource.addImport(Getter.class);
 		serviceSource.addImport(Setter.class);
@@ -118,10 +121,20 @@ public class ServiceGenerator {
 				else if ("login.password".equals(param.getName())) {
 					paramName = "password";
 				}
+
+				String fieldJavaTypeName = param.getJavaTypeName();
+
+				if (!param.isJavaLangType()) {
+					serviceSource.addImport(param.getJavaTypeName());
+				}
+
 				FieldSource<JavaClassSource> fieldSource = inTypeSource.addField()
 					.setName(paramName)
-					.setType(param.getJavaType())
+					.setType(fieldJavaTypeName)
 					.setPrivate();
+
+				// add field caption
+				fieldSource.getJavaDoc().setFullText(GeneratorUtil.createCaptionFromCamelCase(param.getName()));
 
 				fieldSource.addAnnotation(Getter.class);
 				fieldSource.addAnnotation(Setter.class);
@@ -132,7 +145,7 @@ public class ServiceGenerator {
 				// append param to "fromMap()" body
 				fromMapMethodBody.append(String.format("%s = %s map.get(\"%s\");",
 						paramName,
-						"(" + param.getJavaType().getSimpleName() + ")",
+						"(" + param.getJavaTypeName() + ")",
 						paramKey));
 			}
 
@@ -185,10 +198,19 @@ public class ServiceGenerator {
 
 			// create In type fields
 			for (ServiceParameter param : outParams) {
+				String fieldJavaTypeName = param.getJavaTypeName();
+
+				if (!param.isJavaLangType()) {
+					serviceSource.addImport(param.getJavaTypeName());
+				}
+
 				FieldSource<JavaClassSource> fieldSource = outTypeSource.addField()
 					.setName(param.getName())
-					.setType(param.getJavaType())
+					.setType(fieldJavaTypeName)
 					.setPrivate();
+
+				// add field caption
+				fieldSource.getJavaDoc().setFullText(GeneratorUtil.createCaptionFromCamelCase(param.getName()));
 
 				fieldSource.addAnnotation(Getter.class);
 				fieldSource.addAnnotation(Setter.class);
@@ -199,7 +221,7 @@ public class ServiceGenerator {
 				// append param to "fromMap()" body
 				fromMapMethodBody.append(String.format("%s = %s map.get(\"%s\");",
 						param.getName(),
-						"(" + param.getJavaType().getSimpleName() + ")",
+						"(" + param.getJavaTypeName() + ")",
 						param.getName()));
 			}
 
