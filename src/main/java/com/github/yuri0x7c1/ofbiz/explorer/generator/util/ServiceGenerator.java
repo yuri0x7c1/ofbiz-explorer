@@ -106,7 +106,7 @@ public class ServiceGenerator {
 
 			// toMap method body
 			StringBuilder toMapMethodBody = new StringBuilder("Map map = new HashMap();");
-			StringBuilder fromMapMethodBody = new StringBuilder("In result = new In();");
+			StringBuilder fromMapMethodBody = new StringBuilder();
 
 			// create In type fields
 			for (ServiceParameter param : inParams) {

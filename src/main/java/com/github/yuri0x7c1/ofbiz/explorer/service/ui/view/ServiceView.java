@@ -1,5 +1,8 @@
 package com.github.yuri0x7c1.ofbiz.explorer.service.ui.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,7 @@ import org.vaadin.spring.sidebar.annotation.VaadinFontIcon;
 
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.sidebar.Sections;
 import com.github.yuri0x7c1.ofbiz.explorer.common.ui.view.CommonView;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.generator.util.ServiceFormGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.generator.util.ServiceGenerator;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
@@ -22,9 +26,11 @@ import com.vaadin.server.Page;
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.annotation.UIScope;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.renderers.ButtonRenderer;
+import com.vaadin.ui.themes.ValoTheme;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +57,8 @@ public class ServiceView extends CommonView implements View {
 
 	private GridCellFilter<Service> serviceGridFilter;
 
+	private Button generateAllButton = new Button("Generate all");
+
 
 	@Autowired
 	ServiceGenerator serviceGenerator;
@@ -60,6 +68,7 @@ public class ServiceView extends CommonView implements View {
 
 	public ServiceView() {
 		setHeight(100.0f, Unit.PERCENTAGE);
+		addHeaderComponent(generateAllButton);
 		serviceGrid.setHeight(100.0f, Unit.PERCENTAGE);
 		addComponent(serviceGrid);
 		setExpandRatio(serviceGrid, 1.0f);
@@ -68,6 +77,36 @@ public class ServiceView extends CommonView implements View {
 	@PostConstruct
 	public void init() {
 		setHeaderText(i18n.get("Services"));
+
+		// generate all button
+		generateAllButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
+		generateAllButton.addClickListener(event -> {
+			List<String> errorServices = new ArrayList<>();
+			log.info("Generating all services");
+			for (Service service : ofbizInstance.getAllServices().values()) {
+				try {
+					serviceGenerator.generate(service);
+					String msg = String.format("Service %s generated successfully to %s", service.getName(), env.getProperty("generator.destination_path"));
+					log.info(msg);
+				}
+				catch (Exception e) {
+					errorServices.add(service.getName());
+					String msg = String.format("Service generation %s failed", service.getName());
+					log.error(msg, e);
+				}
+			}
+
+			if (errorServices.isEmpty()) {
+				new Notification("Services are generated!",
+						Notification.Type.HUMANIZED_MESSAGE)
+						.show(Page.getCurrent());
+			}
+			else {
+				new Notification("Services are generated with problems in:" + String.join(", ", errorServices),
+						Notification.Type.WARNING_MESSAGE)
+						.show(Page.getCurrent());
+			}
+		});
 
 		serviceGrid.setItems(ofbizInstance.getAllServices().values());
 		serviceGrid.setWidth("100%");
