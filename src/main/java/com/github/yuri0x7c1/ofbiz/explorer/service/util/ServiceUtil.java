@@ -1,7 +1,10 @@
 package com.github.yuri0x7c1.ofbiz.explorer.service.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -12,6 +15,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributes;
+import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Exclude;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Service;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizUtil;
@@ -31,8 +35,8 @@ public class ServiceUtil {
 	@Autowired
 	private OfbizInstance ofbizInstance;
 
-	public  List<ServiceParameter> getServiceParameters(Service service) {
-		List<ServiceParameter> serviceParams = new ArrayList<>();
+	public  Map<String, ServiceParameter> getServiceParameters(Service service) {
+		Map<String, ServiceParameter> serviceParams = new LinkedHashMap<>();
 		for (Object attr : service.getAutoAttributesOrAttribute()) {
 			if (attr instanceof Attribute) {
 				ServiceParameter serviceParam = ServiceParameter.builder()
@@ -42,7 +46,10 @@ public class ServiceUtil {
 					.mode(((Attribute) attr).getMode())
 					.entityName(((Attribute) attr).getEntityName())
 					.build();
-				serviceParams.add(serviceParam);
+
+				if (serviceParams.get(((Attribute) attr).getName()) == null) {
+					serviceParams.put(((Attribute) attr).getName(), serviceParam);
+				}
 			}
 			else if (attr instanceof AutoAttributes) {
 				String entityName = ((AutoAttributes) attr).getEntityName();
@@ -53,6 +60,10 @@ public class ServiceUtil {
 				Entity entity = ofbizInstance.getAllEntities().get(entityName);
 				List<Field> entityFields = OfbizUtil.getFields(entity, include);
 				for (Field f : entityFields) {
+					for (Exclude exclude : ((AutoAttributes) attr).getExclude()) {
+						if (f.getName().equals(exclude.getFieldName())) continue;
+					}
+
 					ServiceParameter serviceParam = ServiceParameter.builder()
 							.name(f.getName())
 							.optional(Boolean.valueOf(((AutoAttributes) attr).getOptional()))
@@ -60,23 +71,26 @@ public class ServiceUtil {
 							.entityName(entityName)
 							.type(FieldType.find(f).getJavaType().getName())
 							.build();
-					serviceParams.add(serviceParam);
+
+					if (serviceParams.get(f.getName()) == null) {
+						serviceParams.put(f.getName(), serviceParam);
+					}
 				}
 			}
 		}
 
 		// add internal parameters
-		serviceParams.add(new ServiceParameter("locale", true, "java.util.Locale", "INOUT", true, null));
-		serviceParams.add(new ServiceParameter("login.password", true, "String", "IN", true, null));
-		serviceParams.add(new ServiceParameter("login.username", true, "String", "IN", true, null));
-		serviceParams.add(new ServiceParameter("timeZone", true, "java.util.TimeZone", "INOUT", true, null));
-		serviceParams.add(new ServiceParameter("userLogin", true, "org.apache.ofbiz.entity.GenericValue", "INOUT", true, null));
+		serviceParams.put("locale", new ServiceParameter("locale", true, "java.util.Locale", "INOUT", true, null));
+		serviceParams.put("login.password", new ServiceParameter("login.password", true, "String", "IN", true, null));
+		serviceParams.put("login.username", new ServiceParameter("login.username", true, "String", "IN", true, null));
+		serviceParams.put("timeZone", new ServiceParameter("timeZone", true, "java.util.TimeZone", "INOUT", true, null));
+		serviceParams.put("userLogin", new ServiceParameter("userLogin", true, "org.apache.ofbiz.entity.GenericValue", "INOUT", true, null));
 
-		serviceParams.add(new ServiceParameter("errorMessage", true, "String", "OUT", true, null));
-		serviceParams.add(new ServiceParameter("errorMessageList", true, "List", "OUT", true, null));
-		serviceParams.add(new ServiceParameter("responseMessage", true, "String", "OUT", true, null));
-		serviceParams.add(new ServiceParameter("successMessage", true, "String", "OUT", true, null));
-		serviceParams.add(new ServiceParameter("successMessageList", true, "List", "OUT", true, null));
+		serviceParams.put("errorMessage", new ServiceParameter("errorMessage", true, "String", "OUT", true, null));
+		serviceParams.put("errorMessageList", new ServiceParameter("errorMessageList", true, "List", "OUT", true, null));
+		serviceParams.put("responseMessage", new ServiceParameter("responseMessage", true, "String", "OUT", true, null));
+		serviceParams.put("successMessage", new ServiceParameter("successMessage", true, "String", "OUT", true, null));
+		serviceParams.put("successMessageList", new ServiceParameter("successMessageList", true, "List", "OUT", true, null));
 
 		return serviceParams;
 	}
@@ -85,9 +99,9 @@ public class ServiceUtil {
 	public static final String SERVICE_PARAMETER_MODE_OUT = "OUT";
 	public static final String SERVICE_PARAMETER_MODE_INOUT = "INOUT";
 
-	public List<ServiceParameter> getServiceInParameters(Service service) {
-		List<ServiceParameter> allParams = getServiceParameters(service);
-		List<ServiceParameter> inParams = new ArrayList<>();
+	public Collection<ServiceParameter> getServiceInParameters(Service service) {
+		Collection<ServiceParameter> allParams = getServiceParameters(service).values();
+		Collection<ServiceParameter> inParams = new ArrayList<>();
 		for (ServiceParameter param : allParams) {
 			if (param.getMode().equals(SERVICE_PARAMETER_MODE_IN) || param.getMode().equals(SERVICE_PARAMETER_MODE_INOUT)) {
 				inParams.add(param);
@@ -96,9 +110,9 @@ public class ServiceUtil {
 		return inParams;
 	}
 
-	public List<ServiceParameter> getServiceOutParameters(Service service) {
-		List<ServiceParameter> allParams = getServiceParameters(service);
-		List<ServiceParameter> outParams = new ArrayList<>();
+	public Collection<ServiceParameter> getServiceOutParameters(Service service) {
+		Collection<ServiceParameter> allParams = getServiceParameters(service).values();
+		Collection<ServiceParameter> outParams = new ArrayList<>();
 		for (ServiceParameter param : allParams) {
 			if (param.getMode().equals(SERVICE_PARAMETER_MODE_OUT) || param.getMode().equals(SERVICE_PARAMETER_MODE_OUT)) {
 				outParams.add(param);

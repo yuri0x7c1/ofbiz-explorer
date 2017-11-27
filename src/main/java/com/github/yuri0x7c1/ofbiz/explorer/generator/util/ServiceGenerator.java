@@ -1,6 +1,7 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,8 +93,8 @@ public class ServiceGenerator {
 			.setPrivate()
 			.addAnnotation(Autowired.class);
 
-		List<ServiceParameter> inParams = serviceUtil.getServiceInParameters(service);
-		List<ServiceParameter> outParams = serviceUtil.getServiceOutParameters(service);
+		Collection<ServiceParameter> inParams = serviceUtil.getServiceInParameters(service);
+		Collection<ServiceParameter> outParams = serviceUtil.getServiceOutParameters(service);
 
 		/* process service IN params */
 

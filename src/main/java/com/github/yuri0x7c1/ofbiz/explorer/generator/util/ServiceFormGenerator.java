@@ -1,7 +1,7 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 
@@ -110,7 +110,7 @@ public class ServiceFormGenerator {
 			.setPrivate();
 
 		// get service params list
-		List<ServiceParameter> inParams = serviceUtil.getServiceInParameters(service);
+		Collection<ServiceParameter> inParams = serviceUtil.getServiceInParameters(service);
 
 		StringBuilder bindFieldsSource = new StringBuilder();
 		StringBuilder addComponentsSource = new StringBuilder();

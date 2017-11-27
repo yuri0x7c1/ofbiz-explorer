@@ -1,6 +1,6 @@
 package com.github.yuri0x7c1.ofbiz.explorer.service.ui.view;
 
-import java.util.List;
+import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 
@@ -76,7 +76,7 @@ public class ServiceDetailView extends CommonView implements View {
 		Service service = ofbizInstance.getAllServices().get(serviceName);
 
 		// TODO: move to separate method
-		List<ServiceParameter> serviceParams = serviceUtil.getServiceParameters(service);
+		Collection<ServiceParameter> serviceParams = serviceUtil.getServiceParameters(service).values();
 		parametersGrid.setItems(serviceParams);
 
 		setHeaderText(serviceName);
