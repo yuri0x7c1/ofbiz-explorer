@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -14,7 +15,6 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceParameter;
 import com.github.yuri0x7c1.ofbiz.explorer.service.util.ServiceUtil;
@@ -124,7 +124,7 @@ public class ServiceGenerator {
 
 				String fieldJavaTypeName = param.getJavaTypeName();
 
-				if (!param.isJavaLangType()) {
+				if (StringUtils.split(fieldJavaTypeName, ".").length > 1) {
 					serviceSource.addImport(param.getJavaTypeName());
 				}
 
@@ -200,7 +200,7 @@ public class ServiceGenerator {
 			for (ServiceParameter param : outParams) {
 				String fieldJavaTypeName = param.getJavaTypeName();
 
-				if (!param.isJavaLangType()) {
+				if (StringUtils.split(fieldJavaTypeName, ".").length > 1) {
 					serviceSource.addImport(param.getJavaTypeName());
 				}
 

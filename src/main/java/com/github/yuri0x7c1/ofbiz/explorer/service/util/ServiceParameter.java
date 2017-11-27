@@ -103,7 +103,8 @@ public class ServiceParameter {
 	}
 
 	public boolean isJavaLangType() {
-		if (type.equals("String") ||
+		if (type.equals("Object") ||
+				type.equals("String") ||
 				type.equals("Integer") ||
 				type.equals("Long") ||
 				type.equals("Float") ||
