@@ -4,23 +4,25 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAttribute;
 
 import org.springframework.boot.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Alias;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.AliasAll;
-import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Boolean;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entitymodel;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Field;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.MemberEntity;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.PrimKey;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.ViewEntity;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.Attribute;
 import com.github.yuri0x7c1.ofbiz.explorer.service.xml.AutoAttributesInclude;
@@ -340,6 +342,10 @@ public class OfbizUtil {
 		entity.setPackageName(viewEntity.getPackageName());
 
 		Map<String, Entity> memberEntities = new LinkedHashMap<>();
+		Set<String> primaryKeyNames = new LinkedHashSet<>();
+		Map<String, PrimKey> primKeys = new LinkedHashMap<>();
+		Map<String, Field> fields = new LinkedHashMap<>();
+		Map<String, Relation> relations = new LinkedHashMap<>();
 
 		for (MemberEntity m : viewEntity.getMemberEntity()) {
 			memberEntities.put(m.getEntityAlias(), ofbizInstance.getAllEntities().get(m.getEntityName()));
@@ -347,10 +353,23 @@ public class OfbizUtil {
 
 		for (AliasAll aliasAll : viewEntity.getAliasAll()) {
 			Entity e = memberEntities.get(aliasAll.getEntityAlias());
-			entity.getPrimaryKeyNames().addAll(e.getPrimaryKeyNames());
-			entity.getPrimKey().addAll(e.getPrimKey());
-			entity.getField().addAll(e.getField());
-			entity.getRelation().addAll(e.getRelation());
+			// add primary key names avoiding duplicates
+			primaryKeyNames.addAll(e.getPrimaryKeyNames());
+
+			// add primkeys avoiding duplicates
+			for (PrimKey primKey : e.getPrimKey()) {
+				primKeys.put(primKey.getField(), primKey);
+			}
+
+			// add fields avoiding duplicates
+			for (Field field : e.getField()) {
+				fields.put(field.getName(), field);
+			}
+
+			// add relations avoiding duplicates
+			for (Relation relation : entity.getRelation()) {
+				relations.put(relation.getFkName(), relation);
+			}
 		}
 
 		for (Alias alias : viewEntity.getAlias()) {
@@ -358,26 +377,37 @@ public class OfbizUtil {
 
 			// try to get field from alias entity by "name" attribute
 			Field f = cloneField(getFieldFromEntity(e, alias.getName()));
+			String fieldName = alias.getName();
 
 
 			// try to get field from alias entity by "field" attribute
 			if (f == null) {
 				f = cloneField(getFieldFromEntity(e, alias.getField()));
-				if (f != null) f.setName(alias.getField());
+				if (f != null) {
+					f.setName(alias.getField());
+					fieldName = alias.getField();
+				}
 			}
 
 			if (f != null) {
-				entity.getField().add(f);
+				fields.put(f.getName(), f);
 			}
 			else {
 				String msg = String.format("Error get field %s from entity %s",
-						f.getName(),
+						fieldName,
 						e.getEntityName());
 				log.error(msg);
 			}
 		}
 
-		entity.getRelation().addAll(viewEntity.getRelation());
+		for (Relation viewEntityRelation : viewEntity.getRelation()) {
+			relations.put(viewEntityRelation.getFkName(), viewEntityRelation);
+		}
+
+		entity.getPrimaryKeyNames().addAll(primaryKeyNames);
+		entity.getPrimKey().addAll(primKeys.values());
+		entity.getField().addAll(fields.values());
+		entity.getRelation().addAll(relations.values());
 
 		return entity;
 	}
