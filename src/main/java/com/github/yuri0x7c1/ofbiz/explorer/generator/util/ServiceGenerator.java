@@ -109,7 +109,7 @@ public class ServiceGenerator {
 			serviceSource.addImport(List.class);
 
 			// toMap method body
-			StringBuilder toMapMethodBody = new StringBuilder("Map map = new HashMap();");
+			StringBuilder toMapMethodBody = new StringBuilder("Map<String, Object> map = new HashMap<>();");
 			StringBuilder fromMapMethodBody = new StringBuilder();
 
 			// create In type fields
@@ -156,7 +156,7 @@ public class ServiceGenerator {
 			// add "toMap()" method to nested "In" type
 			inTypeSource.addMethod()
 				.setName("toMap")
-				.setReturnType(Map.class)
+				.setReturnType("Map<String, Object>")
 				.setPublic()
 				.setBody(toMapMethodBody.toString());
 
@@ -165,14 +165,14 @@ public class ServiceGenerator {
 				.setName("fromMap")
 				.setPublic()
 				.setBody(fromMapMethodBody.toString());
-			fromMapSource.addParameter(Map.class, "map");
+			fromMapSource.addParameter("Map<String, Object>", "map");
 
 			// add constructor
 			inTypeSource.addMethod()
 				.setConstructor(true)
 				.setBody("fromMap(map);")
 				.setPublic()
-				.addParameter(Map.class, "map");
+				.addParameter("Map<String, Object>", "map");
 
 			// add In nested type to service class
 			serviceSource.addNestedType(inTypeSource)
@@ -194,7 +194,7 @@ public class ServiceGenerator {
 			serviceSource.addImport(List.class);
 
 			// toMap method body
-			StringBuilder toMapMethodBody = new StringBuilder("Map map = new HashMap();");
+			StringBuilder toMapMethodBody = new StringBuilder("Map<String, Object> map = new HashMap<>();");
 			StringBuilder fromMapMethodBody = new StringBuilder("Out result = new Out();");
 
 			// create In type fields
@@ -232,7 +232,7 @@ public class ServiceGenerator {
 			// add "toMap()" method to nested "Out" type
 			outTypeSource.addMethod()
 				.setName("toMap")
-				.setReturnType(Map.class)
+				.setReturnType("Map<String, Object>")
 				.setPublic()
 				.setBody(toMapMethodBody.toString());
 
@@ -241,14 +241,14 @@ public class ServiceGenerator {
 				.setName("fromMap")
 				.setPublic()
 				.setBody(fromMapMethodBody.toString());
-			fromMapSource.addParameter(Map.class, "map");
+			fromMapSource.addParameter("Map<String, Object>", "map");
 
 			// add constructor
 			outTypeSource.addMethod()
 				.setConstructor(true)
 				.setBody("fromMap(map);")
 				.setPublic()
-				.addParameter(Map.class, "map");
+				.addParameter("Map<String, Object>", "map");
 
 			// add Out nested type to service class
 			serviceSource.addNestedType(outTypeSource)
@@ -260,7 +260,7 @@ public class ServiceGenerator {
 		serviceSource.addMethod()
 			.setName("runSync")
 			.setPublic()
-			.setBody("Map result = null;"
+			.setBody("Map<String, Object> result = null;"
 				+ "try {"
 				+ "	result = dispatcher.runSync(NAME, in.toMap());"
 				+ "}"
