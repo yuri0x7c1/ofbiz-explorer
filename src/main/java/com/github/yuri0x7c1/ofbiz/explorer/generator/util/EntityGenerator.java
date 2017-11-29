@@ -98,6 +98,15 @@ public class EntityGenerator {
 		  .setStatic(true)
 		  .setFinal(true);
 
+		// add static entity name field
+		entityClass.addField()
+			.setName("NAME")
+			.setType(String.class)
+			.setStringInitializer(entity.getEntityName())
+			.setPublic()
+			.setStatic(true)
+			.setFinal(true);
+
 		// create columns
 		for (Field field : entity.getField()) {
 			Class<?> fieldJavaType = FieldType.find(field).getJavaType();
