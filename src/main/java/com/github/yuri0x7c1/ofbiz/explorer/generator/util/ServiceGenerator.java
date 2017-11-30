@@ -1,6 +1,7 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -76,6 +78,16 @@ public class ServiceGenerator {
 
 		serviceSource.addAnnotation(Component.class);
 		serviceSource.addAnnotation(Slf4j.class);
+
+		// add serialization stuff
+		serviceSource.addInterface(Serializable.class);
+		serviceSource.addField()
+		  .setName("serialVersionUID")
+		  .setType(long.class)
+		  .setLiteralInitializer(String.valueOf(RandomUtils.nextLong(0, Long.MAX_VALUE-1)) + "L")
+		  .setPublic()
+		  .setStatic(true)
+		  .setFinal(true);
 
 		// add static service name field
 		serviceSource.addField()
