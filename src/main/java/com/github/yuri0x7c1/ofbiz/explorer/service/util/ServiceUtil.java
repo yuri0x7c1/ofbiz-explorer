@@ -87,10 +87,10 @@ public class ServiceUtil {
 		serviceParams.put("userLogin", new ServiceParameter("userLogin", true, "org.apache.ofbiz.entity.GenericValue", "INOUT", true, null));
 
 		serviceParams.put("errorMessage", new ServiceParameter("errorMessage", true, "String", "OUT", true, null));
-		serviceParams.put("errorMessageList", new ServiceParameter("errorMessageList", true, "List", "OUT", true, null));
+		serviceParams.put("errorMessageList", new ServiceParameter("errorMessageList", true, "List<String>", "OUT", true, null));
 		serviceParams.put("responseMessage", new ServiceParameter("responseMessage", true, "String", "OUT", true, null));
 		serviceParams.put("successMessage", new ServiceParameter("successMessage", true, "String", "OUT", true, null));
-		serviceParams.put("successMessageList", new ServiceParameter("successMessageList", true, "List", "OUT", true, null));
+		serviceParams.put("successMessageList", new ServiceParameter("successMessageList", true, "List<String>", "OUT", true, null));
 
 		return serviceParams;
 	}

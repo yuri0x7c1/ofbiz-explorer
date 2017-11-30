@@ -75,6 +75,9 @@ public class ServiceParameter {
 		else if ("List".equals(type)) {
 			return "java.util.List";
 		}
+		else if ("List<String>".equals(type)) {
+			return "List<String>";
+		}
 		else if ("Map".equals(type)) {
 			return "java.util.Map";
 		}

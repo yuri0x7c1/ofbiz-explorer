@@ -129,10 +129,10 @@ public class ServiceGenerator {
 				String paramName = param.getName();
 				String paramKey = param.getName();
 				if ("login.username".equals(param.getName())) {
-					paramName = "username";
+					paramName = "loginUsername";
 				}
 				else if ("login.password".equals(param.getName())) {
-					paramName = "password";
+					paramName = "loginPassword";
 				}
 
 				String fieldJavaTypeName = param.getJavaTypeName();
