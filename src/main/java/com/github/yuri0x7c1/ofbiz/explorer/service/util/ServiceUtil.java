@@ -125,16 +125,22 @@ public class ServiceUtil {
 
 	public String locationToPackageName(String location) {
 		String basePackage = env.getProperty("generator.base_package");
-		String servicePackage = basePackage;
+		String packageName = basePackage;
 
 		if (location != null) {
 			if (location.startsWith(LOCATION_PACKAGE)) {
-				servicePackage = basePackage + location.substring(LOCATION_PACKAGE.length(), location.lastIndexOf('.'));
+				packageName = basePackage + location.substring(LOCATION_PACKAGE.length(), location.lastIndexOf('.'));
 			}
 			else if (location.startsWith(LOCATION_COMPONENT)) {
-				servicePackage = basePackage + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
+				packageName = basePackage + "." + location.substring(LOCATION_COMPONENT.length(), location.lastIndexOf('/')).replace('/', '.');
 			}
 		}
-		return servicePackage;
+
+		String servicePackage = env.getProperty("generator.service.package");
+		if (servicePackage != null) {
+			packageName += "." + servicePackage;
+		}
+
+		return packageName;
 	}
 }
