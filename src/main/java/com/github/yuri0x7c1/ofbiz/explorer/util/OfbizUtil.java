@@ -121,7 +121,7 @@ public class OfbizUtil {
 	public static String getOfbizRootPath() {
 		ApplicationHome home = new ApplicationHome();
 		log.info("application home dir {}", home.getDir());
-		return home.getDir() + "/src/test/resources/apache-ofbiz-16.11.02";
+		return home.getDir() + "/src/test/resources/apache-ofbiz-16.11.03";
 	}
 
 	/**
