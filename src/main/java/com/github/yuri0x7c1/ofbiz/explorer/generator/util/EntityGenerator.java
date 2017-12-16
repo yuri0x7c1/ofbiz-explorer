@@ -10,8 +10,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.EnumConstantSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaEnumSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -23,6 +25,7 @@ import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.FieldType;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -138,7 +141,7 @@ public class EntityGenerator {
 		// constructor body
 		for (Field field : entity.getField()) {
 			// append param to "fromValue()" body
-			constructorBody.append(String.format("%s = %s value.get(\"%s\");",
+			constructorBody.append(String.format("%s = %s value.get(Fields.%s.name());",
 				field.getName(),
 				"(" + FieldType.find(field).getJavaType().getSimpleName() + ")",
 				field.getName()));
@@ -196,6 +199,48 @@ public class EntityGenerator {
 	}
 
 	/**
+	 * Create fields enum
+	 * @param entity
+	 * @param entityClass
+	 */
+	private void createFieldsEnum(Entity entity, JavaClassSource entityClass) {
+		JavaEnumSource fieldsEnum = Roaster.create(JavaEnumSource.class);
+		fieldsEnum.setName("Fields");
+
+		for (Field field : entity.getField()) {
+			EnumConstantSource fieldConstant = fieldsEnum.addEnumConstant(field.getName());
+		}
+
+		entityClass.addNestedType(fieldsEnum);
+	}
+
+	/**
+	 * Create relations enum
+	 * @param entity
+	 * @param entityClass
+	 */
+	private void createRelationsEnum(Entity entity, JavaClassSource entityClass) {
+		entityClass.addImport(AllArgsConstructor.class);
+
+		JavaEnumSource fieldsEnum = Roaster.create(JavaEnumSource.class);
+		fieldsEnum.setName("Relations")
+			.setStatic(true)
+			.addAnnotation(AllArgsConstructor.class);
+		fieldsEnum.addField()
+			.setName("type")
+			.setType(String.class)
+			.setPrivate()
+			.addAnnotation(Getter.class);
+
+		for (Relation relation : entity.getRelation()) {
+			EnumConstantSource fieldConstant = fieldsEnum.addEnumConstant(relation.getRelEntityName())
+					.setConstructorArguments("\"" + relation.getType() + "\"");
+		}
+
+		entityClass.addNestedType(fieldsEnum);
+	}
+
+	/**
 	 * Generate code
 	 * @param entity
 	 * @return
@@ -206,6 +251,10 @@ public class EntityGenerator {
 
 		// create entity class
 		final JavaClassSource entityClass = createEntityClass(entity);
+
+		createFieldsEnum(entity, entityClass);
+
+		createRelationsEnum(entity, entityClass);
 
 		// create constructor
 		createConstructorWithGenericValueParameter(entity, entityClass);
