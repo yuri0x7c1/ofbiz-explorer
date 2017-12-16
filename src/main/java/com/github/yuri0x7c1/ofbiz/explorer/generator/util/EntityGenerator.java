@@ -252,8 +252,10 @@ public class EntityGenerator {
 		// create entity class
 		final JavaClassSource entityClass = createEntityClass(entity);
 
+		// create fields enum
 		createFieldsEnum(entity, entityClass);
 
+		// create relations enum
 		createRelationsEnum(entity, entityClass);
 
 		// create constructor
