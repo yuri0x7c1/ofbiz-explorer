@@ -1,5 +1,7 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
+import static com.github.yuri0x7c1.ofbiz.explorer.generator.util.GeneratorUtil.GENERIC_VALUE_CLASS_NAME;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,13 +36,14 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class EntityGenerator {
 
-	public static final String GENERIC_VALUE_CLASS_NAME = "org.apache.ofbiz.entity.GenericValue";
-
 	@Autowired
 	private OfbizInstance ofbizInstance;
 
 	@Autowired
 	private Environment env;
+
+	@Autowired
+	private GeneratorHelper helper;
 
 	public String getRelationFieldName(Relation relation) {
 		StringBuilder name = new StringBuilder();
@@ -62,21 +65,6 @@ public class EntityGenerator {
 		return StringUtils.uncapitalize(name.toString());
 	}
 
-	public String getPackageName(Entity entity) {
-		String packageName = entity.getPackageName().replace("return", "_return").replace("enum", "_enum");
-
-		String basePackage = env.getProperty("generator.base_package");
-		if (basePackage != null && !basePackage.equals("org.apache.ofbiz")) {
-			packageName = packageName.replace("org.apache.ofbiz", basePackage);
-		}
-
-		String entityPackage = env.getProperty("generator.entity.package");
-		if (entityPackage != null) {
-			packageName += "." + entityPackage;
-		}
-		return  packageName;
-	}
-
 	/**
 	 * Create entity class
 	 * @param entity
@@ -85,7 +73,7 @@ public class EntityGenerator {
 	private JavaClassSource createEntityClass(Entity entity) {
 		// create entity class
 		final JavaClassSource entityClass = Roaster.create(JavaClassSource.class);
-		entityClass.setPackage(getPackageName(entity))
+		entityClass.setPackage(helper.getPackageName(entity))
 			.setName(entity.getEntityName());
 
 		// comment
@@ -269,7 +257,7 @@ public class EntityGenerator {
 
 		String destinationPath = env.getProperty("generator.destination_path");
 
-		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(getPackageName(entity))), entity.getEntityName() + ".java");
+		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(helper.getPackageName(entity))), entity.getEntityName() + ".java");
 
 		FileUtils.writeStringToFile(src,  entityClass.toString());
 

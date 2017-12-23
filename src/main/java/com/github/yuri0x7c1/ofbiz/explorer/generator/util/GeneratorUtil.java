@@ -3,6 +3,9 @@ package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 import org.apache.commons.lang3.StringUtils;
 
 public class GeneratorUtil {
+
+	public static final String GENERIC_VALUE_CLASS_NAME = "org.apache.ofbiz.entity.GenericValue";
+
 	public static String underscoredFromCamelCaseLower(String camelCaseString) {
 		String[] words = StringUtils.splitByCharacterTypeCamelCase(camelCaseString);
 		return StringUtils.join(words, "_").toLowerCase();
