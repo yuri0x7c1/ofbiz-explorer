@@ -6,6 +6,10 @@ public class GeneratorUtil {
 
 	public static final String GENERIC_VALUE_CLASS_NAME = "org.apache.ofbiz.entity.GenericValue";
 
+	public static final String PERFORM_FIND_LIST_SERVICE_NAME = "org.apache.ofbiz.common.service.PerformFindListService";
+
+	public static final String PERFORM_FIND_ITEM_SERVICE_NAME = "org.apache.ofbiz.common.service.PerformFindItemService";
+
 	public static String underscoredFromCamelCaseLower(String camelCaseString) {
 		String[] words = StringUtils.splitByCharacterTypeCamelCase(camelCaseString);
 		return StringUtils.join(words, "_").toLowerCase();
