@@ -14,8 +14,11 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Entity;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.KeyMap;
+import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Relation;
 import com.github.yuri0x7c1.ofbiz.explorer.util.OfbizInstance;
 
 import lombok.extern.slf4j.Slf4j;
@@ -152,6 +155,63 @@ public class EntityBaseServiceGenerator {
 	}
 
 	/**
+	 * Create relation methods
+	 * @param entity
+	 * @param serviceClass
+	 */
+	public void createRelationMethods(Entity entity, JavaClassSource serviceClass) {
+		for (Relation relation : entity.getRelation()) {
+			log.info("\tGenerate relation field for entity {}", relation.getRelEntityName());
+			Entity relationEntity = ofbizInstance.getAllEntities().get(relation.getRelEntityName());
+			if (relationEntity == null) {
+				log.error("\tError get relation object for entity {}. Skipping relation.", relation.getRelEntityName());
+			}
+			else {
+				if (Relation.TYPE_ONE.equals(relation.getType()) ||
+						Relation.TYPE_ONE_NOFK.equals(relation.getType())) {
+					String relationType = helper.getPackageName(relationEntity) + "." + relationEntity.getEntityName();
+					serviceClass.addImport(relationType);
+
+					MethodSource<JavaClassSource> getOneRelationMethod = serviceClass.addMethod()
+							.setName("get" + StringUtils.capitalize(helper.getRelationFieldName(relation)))
+							.setPublic()
+							.setReturnType(relationType);
+
+					String entityVariableName = StringUtils.uncapitalize(entity.getEntityName());
+					getOneRelationMethod.addParameter(entity.getEntityName(), entityVariableName);
+
+					StringBuilder inputFields = new StringBuilder("");
+
+					for (KeyMap keyMap : relation.getKeyMap()) {
+						String fieldName = keyMap.getFieldName();
+						String relFieldName = keyMap.getRelFieldName() != null ? keyMap.getRelFieldName() : fieldName;
+						inputFields.append(
+							String.format(
+								".addInputField(%s.Fields.%s.name(), FindUtil.OPTION_EQUALS, false, %s)\n",
+								relationEntity.getEntityName(),
+								relFieldName,
+								entityVariableName + ".get" + StringUtils.capitalize(fieldName) + "()"
+							)
+						);
+
+						getOneRelationMethod.setBody(String.format("		return %s.fromValue(\n" +
+								"			performFindItemService.runSync(\n" +
+								"				PerformFindItemService.In.builder()\n" +
+								"					.entityName(%s.NAME)\n" +
+								"					.inputFields(\n" +
+								"						new InputFieldBuilder()\n" +
+								"							%s\n" +
+								"							.build()\n" +
+								"					).build()\n" +
+								"			).getItem()\n" +
+								"		);", relationEntity.getEntityName(), relationEntity.getEntityName(), inputFields));
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Generate code
 	 * @param entity
 	 * @return
@@ -184,9 +244,12 @@ public class EntityBaseServiceGenerator {
 		// create find one method
 		createFindOneMethod(entity, serviceClass);
 
+		// create relations methods
+		createRelationMethods(entity, serviceClass);
+
 		String destinationPath = env.getProperty("generator.destination_path");
 
-		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(helper.getPackageName(entity))), entity.getEntityName() + ".java");
+		File src = new File(FilenameUtils.concat(destinationPath, GeneratorUtil.packageNameToPath(helper.getPackageName(entity))), serviceClass.getName() + ".java");
 
 		FileUtils.writeStringToFile(src,  serviceClass.toString());
 
