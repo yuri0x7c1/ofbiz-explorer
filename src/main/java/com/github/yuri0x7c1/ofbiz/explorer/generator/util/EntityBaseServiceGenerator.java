@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.atteo.evo.inflector.English;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -210,7 +211,7 @@ public class EntityBaseServiceGenerator {
 				}
 				else if(relation.TYPE_MANY.equals(relation.getType())) {
 					MethodSource<JavaClassSource> getManyRelationMethod = serviceClass.addMethod()
-							.setName("get" + StringUtils.capitalize(helper.getRelationFieldName(relation)) + "s")
+							.setName("get" + StringUtils.capitalize(English.plural(helper.getRelationFieldName(relation))))
 							.setPublic()
 							.setReturnType("List<" + relationType + ">");
 
