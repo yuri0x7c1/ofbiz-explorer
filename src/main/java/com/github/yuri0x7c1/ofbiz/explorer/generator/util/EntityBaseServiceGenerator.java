@@ -167,10 +167,11 @@ public class EntityBaseServiceGenerator {
 				log.error("\tError get relation object for entity {}. Skipping relation.", relation.getRelEntityName());
 			}
 			else {
+				String relationType = helper.getPackageName(relationEntity) + "." + relationEntity.getEntityName();
+				serviceClass.addImport(relationType);
+
 				if (Relation.TYPE_ONE.equals(relation.getType()) ||
 						Relation.TYPE_ONE_NOFK.equals(relation.getType())) {
-					String relationType = helper.getPackageName(relationEntity) + "." + relationEntity.getEntityName();
-					serviceClass.addImport(relationType);
 
 					MethodSource<JavaClassSource> getOneRelationMethod = serviceClass.addMethod()
 							.setName("get" + StringUtils.capitalize(helper.getRelationFieldName(relation)))
@@ -206,6 +207,49 @@ public class EntityBaseServiceGenerator {
 								"			).getItem()\n" +
 								"		);", relationEntity.getEntityName(), relationEntity.getEntityName(), inputFields));
 					}
+				}
+				else if(relation.TYPE_MANY.equals(relation.getType())) {
+					MethodSource<JavaClassSource> getManyRelationMethod = serviceClass.addMethod()
+							.setName("get" + StringUtils.capitalize(helper.getRelationFieldName(relation)) + "s")
+							.setPublic()
+							.setReturnType("List<" + relationType + ">");
+
+					String entityVariableName = StringUtils.uncapitalize(entity.getEntityName());
+					getManyRelationMethod.addParameter(entity.getEntityName(), entityVariableName);
+					getManyRelationMethod.addParameter("Integer", "viewIndex");
+					getManyRelationMethod.addParameter("Integer", "viewSize");
+					getManyRelationMethod.addParameter("String", "orderBy");
+
+					StringBuilder inputFields = new StringBuilder("");
+
+					for (KeyMap keyMap : relation.getKeyMap()) {
+						String fieldName = keyMap.getFieldName();
+						String relFieldName = keyMap.getRelFieldName() != null ? keyMap.getRelFieldName() : fieldName;
+						inputFields.append(
+							String.format(
+								".addInputField(%s.Fields.%s.name(), FindUtil.OPTION_EQUALS, false, %s)\n",
+								relationEntity.getEntityName(),
+								relFieldName,
+								entityVariableName + ".get" + StringUtils.capitalize(fieldName) + "()"
+							)
+						);
+
+						getManyRelationMethod.setBody(String.format("		return %s.fromValues(\n" +
+								"			performFindListService.runSync(\n" +
+								"				PerformFindListService.In.builder()\n" +
+								"				.viewIndex(viewIndex)\n" +
+								"				.viewSize(viewSize)\n" +
+								"					.inputFields(\n" +
+								"						new InputFieldBuilder()\n" +
+								"							%s\n" +
+								"							.build()\n" +
+								"				).build()\n" +
+								"			).getList()\n" +
+								"		);", relationEntity.getEntityName(), inputFields, relationEntity.getEntityName()));
+
+						// getManyRelationMethod.setBody("return null;");
+					}
+
 				}
 			}
 		}
