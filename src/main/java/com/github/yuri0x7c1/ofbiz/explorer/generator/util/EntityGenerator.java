@@ -244,7 +244,7 @@ public class EntityGenerator {
 		createFieldsEnum(entity, entityClass);
 
 		// create relations enum
-		createRelationsEnum(entity, entityClass);
+		// createRelationsEnum(entity, entityClass);
 
 		// create constructor
 		createConstructorWithGenericValueParameter(entity, entityClass);
