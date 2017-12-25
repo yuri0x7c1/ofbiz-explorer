@@ -1,6 +1,7 @@
 package com.github.yuri0x7c1.ofbiz.explorer.generator.util;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class EntityBaseServiceGenerator {
 
+	public static final String PERFORM_FIND_LIST_SERVICE_NAME = "org.apache.ofbiz.common.service.PerformFindListService";
+
+	public static final String PERFORM_FIND_ITEM_SERVICE_NAME = "org.apache.ofbiz.common.service.PerformFindItemService";
 
 	@Autowired
 	private OfbizInstance ofbizInstance;
@@ -37,8 +41,7 @@ public class EntityBaseServiceGenerator {
 		JavaClassSource serviceClass = Roaster.create(JavaClassSource.class)
 				.setName(entity.getEntityName() + "BaseService");
 
-		serviceClass.addImport(GeneratorUtil.PERFORM_FIND_LIST_SERVICE_NAME);
-		serviceClass.addImport(GeneratorUtil.PERFORM_FIND_ITEM_SERVICE_NAME);
+		serviceClass.addAnnotation(SuppressWarnings.class).setStringValue("unchecked");
 
 		serviceClass.addField()
 			.setName("performFindListService")
@@ -63,11 +66,6 @@ public class EntityBaseServiceGenerator {
 	 * @return
 	 */
 	private MethodSource<JavaClassSource> createFindMethod(Entity entity, JavaClassSource serviceClass) {
-		serviceClass.addImport(List.class);
-		serviceClass.addImport(Map.class);
-		serviceClass.addImport(helper.getPackageName(entity) + "." + entity.getEntityName());
-		serviceClass.addImport(MapUtils.class);
-
 		MethodSource<JavaClassSource> findMethod = serviceClass.addMethod()
 				.setName("find")
 				.setPublic()
@@ -80,12 +78,12 @@ public class EntityBaseServiceGenerator {
 
 		findMethod.setBody(String.format("		return %s.fromValues(\n" +
 				"			performFindListService.runSync(\n" +
-				"				In.builder()\n" +
+				"				PerformFindListService.In.builder()\n" +
 				"					.entityName(%s.NAME)\n" +
 				"					.viewIndex(viewIndex)\n" +
 				"					.viewSize(viewSize)\n" +
 				"					.inputFields(inputFields != null ? inputFields : Collections.EMPTY_MAP)\n" +
-				"					.noConditionFind(MapUtils.isNotEmpty(inputFields) ? \"N\" : \"Y\")\n" +
+				"					.noConditionFind(MapUtils.isNotEmpty(inputFields) ? FindUtil.N : FindUtil.Y)\n" +
 				"					.build()\n" +
 				"			).getList()\n" +
 				"		);", entity.getEntityName(), entity.getEntityName()));
@@ -99,23 +97,58 @@ public class EntityBaseServiceGenerator {
 	 * @return
 	 */
 	private MethodSource<JavaClassSource> createCountMethod(Entity entity, JavaClassSource serviceClass) {
-		MethodSource<JavaClassSource> findMethod = serviceClass.addMethod()
+		MethodSource<JavaClassSource> countMethod = serviceClass.addMethod()
 				.setName("count")
 				.setPublic()
 				.setReturnType(Integer.class);
 
-		findMethod.addParameter("Map<String, String>", "inputFields");
+		countMethod.addParameter("Map<String, String>", "inputFields");
 
-		findMethod.setBody(String.format("		return performFindListService.runSync(\n" +
-				"			In.builder()\n" +
+		countMethod.setBody(String.format("		return performFindListService.runSync(\n" +
+				"			PerformFindListService.In.builder()\n" +
 				"				.entityName(%s.NAME)\n" +
 				"				.viewIndex(1)\n" +
 				"				.viewSize(1)\n" +
 				"				.inputFields(inputFields != null ? inputFields : Collections.EMPTY_MAP)\n" +
-				"				.noConditionFind(MapUtils.isNotEmpty(inputFields) ? \"N\" : \"Y\")\n" +
+				"				.noConditionFind(MapUtils.isNotEmpty(inputFields) ? FindUtil.N : FindUtil.Y)\n" +
 				"				.build()\n" +
 				"			).getListSize();", entity.getEntityName()));
-		return findMethod;
+		return countMethod;
+	}
+
+	/**
+	 * Create fine one method
+	 * @param entity
+	 * @param serviceClass
+	 * @return
+	 */
+	private MethodSource<JavaClassSource> createFindOneMethod(Entity entity, JavaClassSource serviceClass) {
+		MethodSource<JavaClassSource> findOneMethod = serviceClass.addMethod()
+				.setName("findOne")
+				.setPublic()
+				.setReturnType(entity.getEntityName());
+
+		StringBuilder inputFields = new StringBuilder("");
+
+		for (String pkName : entity.getPrimaryKeyNames()) {
+			findOneMethod.addParameter("String", pkName);
+
+			inputFields.append(String.format(".addInputField(%s.Fields.%s.name(), FindUtil.OPTION_EQUALS, false, %s)\n",
+					entity.getEntityName(), pkName, pkName));
+		}
+
+		findOneMethod.setBody(String.format("		return %s.fromValue(\n" +
+				"			performFindItemService.runSync(\n" +
+				"				PerformFindItemService.In.builder()\n" +
+				"					.entityName(%s.NAME)\n" +
+				"					.inputFields(\n" +
+				"						new InputFieldBuilder()\n" +
+				"							%s\n" +
+				"							.build()\n" +
+				"					).build()\n" +
+				"			).getItem()\n" +
+				"		);", entity.getEntityName(), entity.getEntityName(), inputFields));
+		return findOneMethod;
 	}
 
 	/**
@@ -130,11 +163,26 @@ public class EntityBaseServiceGenerator {
 		// create service class
 		final JavaClassSource serviceClass = createServiceClass(entity);
 
+		// add some imports
+		serviceClass.addImport(Collections.class);
+		serviceClass.addImport(List.class);
+		serviceClass.addImport(Map.class);
+		serviceClass.addImport(MapUtils.class);
+		serviceClass.addImport(PERFORM_FIND_LIST_SERVICE_NAME);
+		serviceClass.addImport(PERFORM_FIND_ITEM_SERVICE_NAME);
+		serviceClass.addImport("com.github.yuri0x7c1.uxcrm.common.find.util.FindUtil");
+		serviceClass.addImport("com.github.yuri0x7c1.uxcrm.common.find.util.InputFieldBuilder");
+
+		serviceClass.addImport(helper.getPackageName(entity) + "." + entity.getEntityName());
+
 		// create find method
 		createFindMethod(entity, serviceClass);
 
 		// create count method
 		createCountMethod(entity, serviceClass);
+
+		// create find one method
+		createFindOneMethod(entity, serviceClass);
 
 		String destinationPath = env.getProperty("generator.destination_path");
 
