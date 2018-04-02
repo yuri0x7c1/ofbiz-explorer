@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UIScope
 @SpringView(name = "view-entities")
-@SideBarItem(sectionId = Sections.VIEWS, caption = "View Entities", order = 1)
+@SideBarItem(sectionId = Sections.VIEWS, caption = "ViewEntities", order = 1)
 @VaadinFontIcon(VaadinIcons.DATABASE)
 public class ViewEntityView extends CommonView implements View {
 

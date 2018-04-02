@@ -19,7 +19,7 @@ public abstract class CommonView extends VerticalLayout {
 	private HorizontalLayout headerComponentLayout;
 
 	public CommonView() {
-		setMargin(new MarginInfo(false, true, true, true));
+		setMargin(new MarginInfo(false, false, false, false));
 
 		headerLabel = new MLabel()
 			.withStyleName(ValoTheme.LABEL_H2);
