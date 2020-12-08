@@ -12,7 +12,7 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.springframework.boot.ApplicationHome;
+import org.springframework.boot.system.ApplicationHome;
 
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.Alias;
 import com.github.yuri0x7c1.ofbiz.explorer.entity.xml.AliasAll;
